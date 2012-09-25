@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import unittest
-from board import Board
+from board import Board, PlaceTakenError
 from piece import Piece
 
 class TestQuartoBoard(unittest.TestCase):
@@ -9,6 +9,11 @@ class TestQuartoBoard(unittest.TestCase):
     def setUp(self):
         self.b1 = Board()
     
+    def test_place(self):
+        self.b1.place(Piece(), 0, 0)
+        with self.assertRaises(PlaceTakenError):
+            self.b1.place(Piece(), 0, 0)
+
     def test_get(self):
         self.assertEqual(None, self.b1.get(0, 0))
         self.b1.place(Piece(), 0, 0)

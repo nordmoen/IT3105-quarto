@@ -7,7 +7,7 @@ class Board:
 
     def place(self, piece, x, y):
         if self.board[y][x]:
-            raise PlaceTakenError((x, y))
+            raise PlaceTakenError((x, y), str(self))
         else:
             self.board[y][x] = piece
 
@@ -55,9 +55,10 @@ class PlaceTakenError(Exception):
     """Exception raised when a piece is tried to be placed
     on top of another piece"""
 
-    def __init__(self, pos):
+    def __init__(self, pos, board=''):
         self.pos = pos
+        self.board = board
 
     def __str__(self):
-        return 'A piece is already placed in x: {x_pos}, y: {y_pos}'.format(
-                x_pos=self.pos[0], y_pos=self.pos[1])
+        return 'A piece is already placed in x: {x_pos}, y: {y_pos}\n{b}'.format(
+                x_pos=self.pos[0], y_pos=self.pos[1], b=self.board)

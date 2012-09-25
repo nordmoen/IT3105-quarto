@@ -30,3 +30,29 @@ class Piece:
 
     def __repr__(self):
         return str(self)
+
+    def __cmp__(self, other):
+        if other:
+            '''Color has most to say. Eg Any dark piece is greater
+            than a light piece. If they are the same color then
+            tall vs low kick in, where taller is better and so on'''
+            if self.color and not other.color:
+                return 1
+            elif not self.color and other.color:
+                return -1
+            elif self.tall and not other.tall:
+                return 1
+            elif not self.tall and other.tall:
+                return -1
+            elif self.square and not other.square:
+                return 1
+            elif not self.square and other.square:
+                return -1
+            elif self.hollow and not other.hollow:
+                return 1
+            elif not self.hollow and other.hollow:
+                return -1
+            else:
+                return 0
+        else:
+            return 1
