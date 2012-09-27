@@ -17,7 +17,7 @@ typedef struct{
 	unsigned char next_piece;
 }MinimaxRes;
 
-void minimax(QuartoPiece *a, QuartoBoard *board, MinimaxRes *res, int max)
+void minimax(QuartoPiece *a, QuartoBoard *board, MinimaxRes *res, int max, int numPly)
 {
 
 }
@@ -69,9 +69,10 @@ parse_minimax(PyObject *self, PyObject *args)
 	//algorithm
 	
 	unsigned char piece;
+	int ply;
 	PyObject *board;
 	
-	if(!PyArg_ParseTuple(args, "bO", &piece, &board))
+	if(!PyArg_ParseTuple(args, "bOi", &piece, &board, &ply))
 		return NULL;
 	
 	QuartoPiece p;
@@ -83,7 +84,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	}
 
 	MinimaxRes result;
-	minimax(&p, &b, &result, 1);
+	minimax(&p, &b, &result, 1, ply);
 
 	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	
