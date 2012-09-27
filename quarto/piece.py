@@ -34,6 +34,3 @@ class Piece:
 
     def __repr__(self):
         return self.val
-
-    def __cmp__(self, other):
-        return cmp(self.val, other.val)
