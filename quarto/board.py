@@ -6,17 +6,17 @@ class Board:
         self.board = [[16, 16, 16, 16] for i in range(4)]
 
     def place(self, piece, x, y):
-        if self.board[y][x] < 16:
+        if self.board[y][x] != 16:
             raise PlaceTakenError((x, y), str(self))
         else:
             self.board[y][x] = piece
 
     def get(self, x, y):
-        return self.board[y][x]
+        return self.board[y][x] if self.board[y][x] != 16 else None
 
     def check_victory(self, pos):
         start_piece = self.get(*pos)
-        if start_piece == 16:
+        if not start_piece:
             return None
         in_a_row = [False]*4
         in_a_col = [False]*4
@@ -34,16 +34,16 @@ class Board:
         if self.__is_cross(pos):
             if all(in_a_cross):
                 return (1, 1)
-        if self.__is_cross(pos):
+        if self.__is_cross(pos, False):
             if all(in_a_cross2):
                 return (3, -1)
         return None
     
-    def __is_cross(self, pos):
-        return pos[0] == pos[1] or pos[0] == 3-pos[1]
+    def __is_cross(self, pos, top = True):
+        return pos[0] == pos[1] if top else pos[0] == 3-pos[1]
 
     def __str__(self):
-        return '\n'.join(', '.join(str(piece) if piece < 16 else ' ' for piece in row) for row in self.board)
+        return '\n'.join(', '.join(str(piece) if piece != 16 else ' ' for piece in row) for row in self.board)
     def __repr(self):
         return repr(self.board)
 

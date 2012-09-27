@@ -29,14 +29,6 @@ class TestQuartoPiece(unittest.TestCase):
         self.assertEquals(str(self.p5), '[D]')
         self.assertEquals(str(self.p6), '(l)')
 
-    def test_cmp(self):
-        for piece in self.all[1:]:
-            self.assertTrue(self.p1 > piece)
-        for piece in self.all[:-1]:
-            self.assertTrue(self.p6 < piece)
-        self.assertTrue(self.p2 < self.p3)
-        self.assertTrue(self.p3 < self.p4)
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestQuartoPiece))

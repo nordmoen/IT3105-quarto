@@ -13,7 +13,10 @@ class Piece:
             self.val += 1
 
     def __eq__(self, other):
-        return self.val & other.val > 0 or self.val | other.val < 15 
+        try:
+            return self.val & other.val > 0 or self.val | other.val < 15
+        except AttributeError:
+            return False
 
     def __nq__(self, other):
         return not self == other
