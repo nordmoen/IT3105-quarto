@@ -4,33 +4,27 @@
 #define get_piece(x, y, board) board[y*4 + x]
 
 typedef struct{
-	const char *piece;
-	unsigned int length;
+	unsigned char piece;
 }QuartoPiece;
 
 typedef struct{
 	QuartoPiece board[4*4];
 }QuartoBoard;
 
+typedef struct{
+	unsigned char x;
+	unsigned char y;
+	unsigned char next_piece;
+}MinimaxRes;
+
+void minimax(QuartoPiece *a, QuartoBoard *board, MinimaxRes *res, int max)
+{
+
+}
+
 int pieceEqual(QuartoPiece *a, QuartoPiece *b)
 {
-	int min;
-	if(a->length < b->length){
-		min = a->length;
-	}else{
-		min = b->length;
-	}
-	//We don't need to check the last char
-	//since it will be a closing ) or ]
-	for(int i = 0; i < min - 1; i++){
-		//Check each part of the string
-		//For instance if we have a=[D*] and b = (l*)
-		//the * part will equal and we return true
-		if(a->piece[i] == b->piece[i]){
-			return 1;
-		}
-	}
-	return 0;
+	return ((a->piece & b->piece) > 0) || ((a->piece | b->piece) < 15);
 }
 void parse_board(PyObject *board, QuartoBoard *newBoard)
 {
@@ -51,12 +45,12 @@ is not a 4x4 array");
 		row = PySequence_GetItem(board, i);
 		for(int j = 0; j < inner_size; j++){
 			item = PySequence_GetItem(row, j);
-			if(!PyString_Check(item)){
-				PyErr_SetString(PyExc_TypeError, "Expected String values");
+			if(!PyInt_Check(item)){
+				PyErr_SetString(PyExc_TypeError, "Expected Integers values");
 				return;
 			}
 			QuartoPiece p;
-			p.piece = PyString_AsString(item);
+			p.piece = PyInt_AsLong(item);
 			newBoard->board[i*4 + j] = p;
 		}
 	}
@@ -69,23 +63,24 @@ parse_minimax(PyObject *self, PyObject *args)
 	//C arguments so we can call our "real" minimax
 	//algorithm
 	
-	const char *piece;
+	unsigned char piece;
 	PyObject *board;
-	int piece_size;
 	
-	if(!PyArg_ParseTuple(args, "s#O", &piece, &piece_size, &board))
+	if(!PyArg_ParseTuple(args, "bO", &piece, &board))
 		return NULL;
 	
 	QuartoPiece p;
 	p.piece = piece;
-	p.length = piece_size;
 	QuartoBoard b;
 	parse_board(board, &b);
 	if(PyErr_Occurred() != NULL){
 		return NULL;
 	}
 
-	return Py_BuildValue("");//Py_BuildValue("(ii)s", x, y, next_piece.piece);
+	MinimaxRes result;
+	minimax(&p, &b, &result, 1);
+
+	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	
 
 static PyMethodDef MiniMaxMethods[] = {
