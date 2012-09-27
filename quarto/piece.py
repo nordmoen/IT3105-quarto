@@ -1,16 +1,19 @@
 #!/usr/bin/python
 
 class Piece:
-    def __init__(self, dark=True, tall=True, square=True, hollow=True):
-        self.val = 0
-        if dark:
-            self.val += 8
-        if tall:
-            self.val += 4
-        if square:
-            self.val += 2
-        if hollow:
-            self.val += 1
+    def __init__(self, dark=True, tall=True, square=True, hollow=True, val=None):
+        if val:
+            self.val = val
+        else:                
+            self.val = 0
+            if dark:
+                self.val += 8
+            if tall:
+                self.val += 4
+            if square:
+                self.val += 2
+            if hollow:
+                self.val += 1
 
     def __eq__(self, other):
         try:
