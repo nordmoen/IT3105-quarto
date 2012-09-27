@@ -26,6 +26,11 @@ int pieceEqual(QuartoPiece *a, QuartoPiece *b)
 {
 	return ((a->piece & b->piece) > 0) || ((a->piece | b->piece) < 15);
 }
+int piecesEqual(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
+{
+	return ((a->piece & b->piece & c->piece & d->piece) > 0) || 
+		((a->piece | b->piece | c->piece | d->piece) < 15);
+}
 void parse_board(PyObject *board, QuartoBoard *newBoard)
 {
 	//Board must be 4x4!
