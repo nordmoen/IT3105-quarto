@@ -2,7 +2,7 @@
 
 class Piece:
     def __init__(self, dark=True, tall=True, square=True, hollow=True, val=None):
-        if val:
+        if val != None:
             self.val = val
         else:                
             self.val = 0
@@ -31,6 +31,8 @@ class Piece:
             res = res.upper()
         if self.val & 1:
             res += '*'
+        else:
+            res += ' '
         if self.val & 2:
             f_brace = '['
             b_brace = ']'
@@ -40,4 +42,4 @@ class Piece:
         return '{f}{r}{b}'.format(f=f_brace, r=res, b=b_brace)
 
     def __repr__(self):
-        return self.val
+        return str(self.val)

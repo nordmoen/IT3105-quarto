@@ -18,19 +18,7 @@ class Board:
         start_piece = self.get(*pos)
         if not start_piece:
             return None
-        in_a_row = [False]*4
-        in_a_col = [False]*4
-        in_a_cross = [False]*4
-        in_a_cross2 = [False]*4
-        for i in range(4):
-            in_a_col[i] = self.get(pos[0], i) == start_piece
-            in_a_row[i] = self.get(i, pos[1]) == start_piece
-            in_a_cross[i] = self.get(i, i) == start_piece
-            in_a_cross2[i] = self.get(i, 3-i) == start_piece
-        if all(in_a_row):
-            return (1, 0)
-        if all(in_a_col):
-            return (0, 1)
+        row = [self.get(pos[0], i) for i in range(4)] #not done here
         if self.__is_cross(pos):
             if all(in_a_cross):
                 return (1, 1)
