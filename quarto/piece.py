@@ -3,7 +3,10 @@
 class Piece:
     def __init__(self, dark=True, tall=True, square=True, hollow=True, val=None):
         if val != None:
-            self.val = val
+            if 0 <= val < 16:
+                self.val = val
+            else:
+                raise ValueError('Value is outside range [0, 15]. Value is {value}'.format(value=val))
         else:                
             self.val = 0
             if dark:
@@ -43,3 +46,9 @@ class Piece:
 
     def __repr__(self):
         return str(self.val)
+
+def check_four(a,b,c,d):
+    try:
+        return a.val & b.val & c.val & d.val > 0 or a.xor_val & b.xor_val & c.xor_val & d.xor_val > 0
+    except AttributeError:
+        return False

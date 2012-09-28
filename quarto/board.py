@@ -1,29 +1,34 @@
 #!/usr/bin/python
+from piece import check_four
 
 class Board:
     '''A Quarto board implementation'''
     def __init__(self):
-        self.board = [[16, 16, 16, 16] for i in range(4)]
+        self.board = [[None, None, None, None] for i in range(4)]
 
     def place(self, piece, x, y):
-        if self.board[y][x] != 16:
+        if self.board[y][x]:
             raise PlaceTakenError((x, y), str(self))
         else:
             self.board[y][x] = piece
 
     def get(self, x, y):
-        return self.board[y][x] if self.board[y][x] != 16 else None
+        return self.board[y][x] if self.board[y][x] else None
 
     def check_victory(self, pos):
         start_piece = self.get(*pos)
         if not start_piece:
             return None
-        row = [self.get(pos[0], i) for i in range(4)] #not done here
+
+        if check_four(*[self.get(i, pos[1]) for i in range(4)]):
+            return (1, 0)
+        if check_four(*[self.get(pos[0], i) for i in range(4)]):
+            return (0, 1)
         if self.__is_cross(pos):
-            if all(in_a_cross):
+            if check_four(*[self.get(i, i) for i in range(4)]): 
                 return (1, 1)
         if self.__is_cross(pos, False):
-            if all(in_a_cross2):
+            if check_four(*[self.get(i, 3-i) for i in range(4)]):
                 return (3, -1)
         return None
     
@@ -31,7 +36,7 @@ class Board:
         return pos[0] == pos[1] if top else pos[0] == 3-pos[1]
 
     def __str__(self):
-        return '\n'.join(', '.join(str(piece) if piece != 16 else ' ' for piece in row) for row in self.board)
+        return '\n'.join(', '.join(str(piece) if piece else ' '*4 for piece in row) for row in self.board)
     def __repr(self):
         return repr(self.board)
 

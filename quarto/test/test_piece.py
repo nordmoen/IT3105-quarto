@@ -26,8 +26,8 @@ class TestQuartoPiece(unittest.TestCase):
         self.assertEquals(str(self.p2), '[L*]')
         self.assertEquals(str(self.p3), '[d*]')
         self.assertEquals(str(self.p4), '(D*)')
-        self.assertEquals(str(self.p5), '[D]')
-        self.assertEquals(str(self.p6), '(l)')
+        self.assertEquals(str(self.p5), '[D ]')
+        self.assertEquals(str(self.p6), '(l )')
 
 def suite():
     suite = unittest.TestSuite()
