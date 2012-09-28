@@ -5,6 +5,7 @@
 
 typedef struct{
 	unsigned char piece;
+	unsigned char xor;
 }QuartoPiece;
 
 typedef struct{
@@ -22,14 +23,21 @@ void minimax(QuartoPiece *a, QuartoBoard *board, MinimaxRes *res, int max, int n
 
 }
 
+QuartoPiece create_piece_from_int(unsigned char val)
+{
+	QuartoPiece p;
+	p.piece = val;
+	p.xor = val ^ 15;
+	return p;
+}
 int pieceEqual(QuartoPiece *a, QuartoPiece *b)
 {
-	return ((a->piece & b->piece) > 0) || ((a->piece | b->piece) < 15);
+	return ((a->piece & b->piece) > 0) || ((a->xor & b->xor) > 0);
 }
 int piecesEqual(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
 {
 	return ((a->piece & b->piece & c->piece & d->piece) > 0) || 
-		((a->piece | b->piece | c->piece | d->piece) < 15);
+		((a->xor & b->xor & c->xor & d->xor) > 0);
 }
 void parse_board(PyObject *board, QuartoBoard *newBoard)
 {
@@ -54,9 +62,12 @@ is not a 4x4 array");
 				PyErr_SetString(PyExc_TypeError, "Expected Integers values");
 				return;
 			}
-			QuartoPiece p;
-			p.piece = PyInt_AsLong(item);
-			newBoard->board[i*4 + j] = p;
+			unsigned char val = PyInt_AsLong(item);
+			if(val <= 15 && val >= 0){
+				newBoard->board[i*4 + j] = create_piece_from_int(val);
+			}else{
+				PyErr_SetString(PyExc_ValueError, "Value is not between 0 and 15");
+			}
 		}
 	}
 }
@@ -75,8 +86,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	if(!PyArg_ParseTuple(args, "bOi", &piece, &board, &ply))
 		return NULL;
 	
-	QuartoPiece p;
-	p.piece = piece;
+	QuartoPiece p = create_piece_from_int(piece);
 	QuartoBoard b;
 	parse_board(board, &b);
 	if(PyErr_Occurred() != NULL){

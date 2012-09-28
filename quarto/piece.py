@@ -14,10 +14,11 @@ class Piece:
                 self.val += 2
             if hollow:
                 self.val += 1
+        self.xor_val = self.val ^ 15
 
     def __eq__(self, other):
         try:
-            return self.val & other.val > 0 or self.val | other.val < 15
+            return self.val & other.val > 0 or self.xor_val & other.xor_val > 0
         except AttributeError:
             return False
 
