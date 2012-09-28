@@ -5,12 +5,14 @@ class Board:
     '''A Quarto board implementation'''
     def __init__(self):
         self.board = [[None, None, None, None] for i in range(4)]
+        self.placed = 0
 
     def place(self, piece, x, y):
         if self.board[y][x]:
             raise PlaceTakenError((x, y), str(self))
         else:
             self.board[y][x] = piece
+            self.placed += 1
 
     def get(self, x, y):
         return self.board[y][x] if self.board[y][x] else None
