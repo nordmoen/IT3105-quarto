@@ -19,8 +19,9 @@ class Game:
         while not victory and board.placed != 16:
             placePos = nextPlayer.get_placement(board, placePiece, pieces.values())
             board.place(placePiece, *placePos)
-            placePiece = nextPlayer.get_piece(pieces.values())
-            del pieces[placePiece.val]
+            if pieces:
+                placePiece = nextPlayer.get_piece(pieces.values())
+                del pieces[placePiece.val]
             victory = board.check_victory(placePos)
             if nextPlayer == self.p1:
                 nextPlayer = self.p2

@@ -7,10 +7,11 @@ class HumanPlayer(RandomPlayer):
         print 'Place the piece: {}'.format(piece)
         x, y = raw_input('X, Y: ').split(',')
         pos = (int(x), int(y))
-        print 'Pieces left: {}'.format(zip(range(16), map(str, pieces)))
-        next = raw_input('Select next piece [0, {}]: '.format(len(pieces)-1))
-        while 0 > next > len(pieces):
-            print 'Selection is out of range'
+        if pieces:
+            print 'Pieces left: {}'.format(zip(range(16), map(str, pieces)))
             next = raw_input('Select next piece [0, {}]: '.format(len(pieces)-1))
-        self.placePiece = pieces[int(next)]
+            while 0 > next > len(pieces):
+                print 'Selection is out of range'
+                next = raw_input('Select next piece [0, {}]: '.format(len(pieces)-1))
+            self.placePiece = pieces[int(next)]
         return pos
