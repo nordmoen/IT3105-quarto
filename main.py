@@ -2,12 +2,32 @@
 
 import argparse
 from quarto import quarto
+from quarto.players import random_player
 
 def play_quarto(args):
-    print args
+    p1 = create_player(args.player1)
+    p2 = create_player(args.player2)
+    quarto.main(p1, p2, args.rounds, args.simulate)
 
 def start_server(args):
-    pass
+    raise NotImplementedError('Server is not implemented yet')
+
+def create_player(args):
+    type = args[0]
+    if type == 'random':
+        return random_player.RandomPlayer()
+    elif type == 'novice':
+        raise NotImplementedError('Novice player is not implemented yet')
+    elif type == 'human':
+        raise NotImplementedError('Human player is not implemented yet')
+    else:
+        try:
+            difficulty = args[1]
+            raise NotImplementedError('MiniMax player is not implemented yet')
+        except IndexError:
+            print 'No difficulty selected for player!'
+            raise
+
 
 def main():
     parser = argparse.ArgumentParser(description='Start up a game of Quarto')
@@ -18,6 +38,12 @@ def main():
             help='The number of rounds to be played')
     game_mode.add_argument('-s', '--simulate', action='store_true', 
             help='Should the game be simulated, i.e. should the game print final statistics')
+    game_mode.add_argument('--player1', nargs='+', default='random', choices=['random',
+        'novice', 'minimax', 'human'].extend(range(10)), required=True,
+        help='Select the type of player 1, if minimax is chosen an additional argument is needed')
+    game_mode.add_argument('--player2', nargs='+', default='random', choices=['random',
+        'novice', 'minimax', 'human'].extend(range(10)), required=True,
+        help='Select the type of player 2, if minimax is chosen an additional argument is needed')
     
     game_mode.set_defaults(func=play_quarto)
 

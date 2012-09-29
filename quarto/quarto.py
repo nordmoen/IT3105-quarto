@@ -4,7 +4,7 @@ from game import Game
 
 def main(player1, player2, num_rounds, simulate=False):
     game = Game(player1, player2)
-    res = (0,0)
+    res = [0,0]
     for i in range(num_rounds):
         winner, board, win_pos, last_placed_pos = game.play()
         if winner:
