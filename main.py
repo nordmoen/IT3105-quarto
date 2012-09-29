@@ -20,13 +20,15 @@ def create_player(args):
         raise NotImplementedError('Novice player is not implemented yet')
     elif type == 'human':
         raise NotImplementedError('Human player is not implemented yet')
-    else:
+    elif type == 'minimax':
         try:
             difficulty = args[1]
             raise NotImplementedError('MiniMax player is not implemented yet')
         except IndexError:
             print 'No difficulty selected for player!'
             raise
+    else:
+        raise TypeError('Player type needs to be the first argument to a player')
 
 
 def main():
