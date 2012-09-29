@@ -45,7 +45,7 @@ class Piece:
         return '{f}{r}{b}'.format(f=f_brace, r=res, b=b_brace)
 
     def __repr__(self):
-        return str(self.val)
+        return str('Piece(val={})'.format(self.val))
 
 def check_four(a,b,c,d):
     try:

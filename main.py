@@ -2,7 +2,7 @@
 
 import argparse
 from quarto import quarto
-from quarto.players import random_player
+from quarto.players import random_player, human_player
 
 def play_quarto(args):
     p1 = create_player(args.player1)
@@ -19,7 +19,7 @@ def create_player(args):
     elif type == 'novice':
         raise NotImplementedError('Novice player is not implemented yet')
     elif type == 'human':
-        raise NotImplementedError('Human player is not implemented yet')
+        return human_player.HumanPlayer()
     elif type == 'minimax':
         try:
             difficulty = args[1]

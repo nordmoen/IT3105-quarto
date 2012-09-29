@@ -11,20 +11,21 @@ class Game:
 
     def play(self):
         board = Board()
-        pieces = [Piece(val=i) for i in range(16)]
-        placePiece = self.p1.get_piece(pieces)
-        pieces.remove(placePiece)
+        pieces = {i:Piece(val=i) for i in range(16)}
+        placePiece = self.p1.get_piece(pieces.values())
+        del pieces[placePiece.val]
         nextPlayer = self.p2
         victory = None
         while not victory and board.placed != 16:
-          placePos = nextPlayer.get_placement(board, placePiece, pieces)
-          board.place(placePiece, *placePos)
-          placePiece = nextPlayer.get_piece(pieces)
-          victory = board.check_victory(placePos)
-          if nextPlayer == self.p1:
-            nextPlayer = self.p2
-          else:
-            nextPlayer = self.p1
+            placePos = nextPlayer.get_placement(board, placePiece, pieces.values())
+            board.place(placePiece, *placePos)
+            placePiece = nextPlayer.get_piece(pieces.values())
+            del pieces[placePiece.val]
+            victory = board.check_victory(placePos)
+            if nextPlayer == self.p1:
+                nextPlayer = self.p2
+            else:
+                nextPlayer = self.p1
         if not victory:
             winningPlayer = None
         elif nextPlayer == self.p1:
