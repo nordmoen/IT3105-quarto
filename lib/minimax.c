@@ -1,10 +1,10 @@
 #include <Python.h>
 #include <string.h>
 
-#define get_piece(x, y, board) board[y*4 + x]
-#define set_piece(x, y, board, piece) board[y*4+x]=piece
-#define max(x, y) if(x > y) x; else y;
-#define min(x, y) if(x < y) x; else y;
+#define GET_PIECE(x, y, board) board[y*4 + x]
+#define SET_PIECE(x, y, board, piece) board[y*4+x]=piece
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 typedef struct{
 	unsigned char piece;
@@ -28,6 +28,7 @@ int is_valid_piece(QuartoPiece *piece);
 int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
 int quarto_herustic(QuartoBoard *board);
+int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
 
 //a is the piece we want to place on the board
 //board is the board filled in with some possibilities
@@ -47,8 +48,46 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 		//Return the value of this end state 
 		return quarto_herustic(board)*isMax;	
 	}
-	return 1;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			if(!is_valid_piece(&GET_PIECE(i, j, board->board))){
+				//We can try to place a piece here
+				QuartoBoard newBoard = *board;
+				set_piece(&newBoard, i, j, &a);
+				MinimaxRes r;
+				int re = minimax(NULL, &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
+				if(isMax == 1){
+					alpha = MAX(alpha, re); //TODO place piece here
+					if(alpha >= beta){
+						res->x = i;
+						res->y = j;
+						return alpha;
+					}
+				}else{
+					beta = MIN(beta, re); //TODO place piece here
+					if(alpha >= beta){
+						res->x = i;
+						res->y = j;
+						return beta;
+					}
+				}
+			}
+		}
+	}
+	return 0; //This will never happen, but GCC complains
 }
+
+int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
+{
+	if(board->size < 16){
+		SET_PIECE(x, y, board->board, *piece);
+		board->size += 1;
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
 
 int quarto_herustic(QuartoBoard *board)
 {
@@ -112,11 +151,11 @@ is not a 4x4 array");
 				return;
 			}
 			if(item == Py_None){
-				newBoard->board[i*4 + j] = create_piece_from_int(16);
+				SET_PIECE(j, i, newBoard->board, create_piece_from_int(16));
 			}else{
 				unsigned char val = PyInt_AsLong(item);
 				if(val <= 15 && val >= 0){
-					newBoard->board[i*4 + j] = create_piece_from_int(val);
+					SET_PIECE(j, i, newBoard->board, create_piece_from_int(val));
 					size += 1;
 				}else{
 					PyErr_SetString(PyExc_ValueError, "Value is not between 0 and 15");
@@ -132,7 +171,7 @@ void debug_print_board(QuartoBoard *board)
 	for(int i = 0; i < 4; i++){
 		printf("[");
 		for(int j = 0; j < 4; j++){
-			printf("%i, ", get_piece(j, i, board->board).piece);
+			printf("%i, ", GET_PIECE(j, i, board->board).piece);
 		}
 		printf("]\n");
 	}
