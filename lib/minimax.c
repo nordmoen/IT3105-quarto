@@ -75,23 +75,23 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 				if(isMax == 1){
 					alpha = MAX(alpha, re);
 					if(alpha >= beta){
-						res->x = j;
-						res->y = i;
+						res->x = r.x;
+						res->y = r.y;
 						return alpha;
 					}
 				}else{
 					beta = MIN(beta, re);
 					if(alpha >= beta){
-						res->x = j;
-						res->y = i;
+						res->x = r.x;
+						res->y = r.y;
 						return beta;
 					}
 				}
+				res->x = j;
+				res->y = i;
 			}
 		}
 	}
-	res->x = r.x;
-	res->y = r.y;
 	if(isMax == 1){
 		return alpha;
 	}else{
@@ -237,6 +237,9 @@ parse_minimax(PyObject *self, PyObject *args)
 	if(ply < 1){
 		PyErr_SetString(PyExc_ValueError, "Ply value can not be less than 1");
 		return NULL;
+	}
+	if(piece < 0 || piece > 15){
+		PyErr_SetString(PyExc_ValueError, "Piece is out of range for [0, 15]");
 	}
 
 	
