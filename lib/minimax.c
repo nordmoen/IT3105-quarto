@@ -29,6 +29,8 @@ int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
 int quarto_herustic(QuartoBoard *board);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
+QuartoPiece get_available(QuartoBoard *board);
+void debug_print_board(QuartoBoard *board);
 
 //a is the piece we want to place on the board
 //board is the board filled in with some possibilities
@@ -48,38 +50,80 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 		//Return the value of this end state 
 		return quarto_herustic(board)*isMax;	
 	}
+	MinimaxRes r;
+	printf("Board: \n");
+	debug_print_board(board);
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
-			if(!is_valid_piece(&GET_PIECE(i, j, board->board))){
+			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
 				//We can try to place a piece here
 				QuartoBoard newBoard = *board;
-				set_piece(&newBoard, i, j, &a);
-				MinimaxRes r;
-				int re = minimax(NULL, &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
+				if(!set_piece(&newBoard, j, i, &a)){
+					PyErr_SetString(PyExc_RuntimeError, "Tried to place a piece in a position which could not be placed");
+					return 0;
+				}
+				printf("New board: \n");
+				debug_print_board(&newBoard);
+				int re = minimax(get_available(&newBoard), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
+				printf("Minimax call returned: %i\n", re);
+				if(!re){
+					//Something must have gone wrong longer down in the call stack
+					//so just return 0 to indicate upwards that an error need to
+					//be signaled to Python
+					return 0;
+				}
 				if(isMax == 1){
-					alpha = MAX(alpha, re); //TODO place piece here
+					alpha = MAX(alpha, re);
 					if(alpha >= beta){
-						res->x = i;
-						res->y = j;
+						res->x = j;
+						res->y = i;
 						return alpha;
 					}
 				}else{
-					beta = MIN(beta, re); //TODO place piece here
+					beta = MIN(beta, re);
 					if(alpha >= beta){
-						res->x = i;
-						res->y = j;
+						res->x = j;
+						res->y = i;
 						return beta;
 					}
 				}
 			}
 		}
 	}
-	return 0; //This will never happen, but GCC complains
+	res->x = r.x;
+	res->y = r.y;
+	if(isMax == 1){
+		return alpha;
+	}else{
+		return beta;
+	}
+}
+
+QuartoPiece get_available(QuartoBoard *board)
+{
+	int available[16];
+	QuartoPiece tmp;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			tmp = GET_PIECE(i, j, board->board);
+			if(is_valid_piece(&tmp)){
+				available[tmp.piece] = 0;
+			}else{
+				available[tmp.piece] = 1;
+			}
+		}
+	}
+	for(int i = 0; i < 16; i++){
+		if(available[i]){
+			return create_piece_from_int(i);
+		}
+	}
+	return create_piece_from_int(16);
 }
 
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 {
-	if(board->size < 16){
+	if(board->size < 16 && is_valid_piece(piece)){
 		SET_PIECE(x, y, board->board, *piece);
 		board->size += 1;
 		return 1;
@@ -91,7 +135,7 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 
 int quarto_herustic(QuartoBoard *board)
 {
-	return 0;
+	return 42;
 }
 
 QuartoPiece create_piece_from_int(unsigned char val)
@@ -205,9 +249,11 @@ parse_minimax(PyObject *self, PyObject *args)
 	}
 
 	MinimaxRes result;
-	minimax(p, &b, &result, 1, ply, -1000, 1000);
+	if(!minimax(p, &b, &result, 1, ply, -1000, 1000)){
+		return NULL;
+	}
 
-	return Py_BuildValue(""); //Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
+	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	
 
 static PyMethodDef MiniMaxMethods[] = {
@@ -218,7 +264,7 @@ static PyMethodDef MiniMaxMethods[] = {
 };
  
 PyMODINIT_FUNC
-initquarto(void)
+initcquarto(void)
 {
-	(void) Py_InitModule("quarto", MiniMaxMethods);
+	(void) Py_InitModule("cquarto", MiniMaxMethods);
 }
