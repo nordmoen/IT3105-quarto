@@ -51,8 +51,6 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 		return quarto_herustic(board)*isMax;	
 	}
 	MinimaxRes r;
-	printf("Board: \n");
-	debug_print_board(board);
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
@@ -62,10 +60,7 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					PyErr_SetString(PyExc_RuntimeError, "Tried to place a piece in a position which could not be placed");
 					return 0;
 				}
-				printf("New board: \n");
-				debug_print_board(&newBoard);
 				int re = minimax(get_available(&newBoard), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
-				printf("Minimax call returned: %i\n", re);
 				if(!re){
 					//Something must have gone wrong longer down in the call stack
 					//so just return 0 to indicate upwards that an error need to
@@ -73,22 +68,24 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					return 0;
 				}
 				if(isMax == 1){
-					alpha = MAX(alpha, re);
+					if(re > alpha){
+						res->x = j;
+						res->y = i;
+						alpha = re;
+					}
 					if(alpha >= beta){
-						res->x = r.x;
-						res->y = r.y;
 						return alpha;
 					}
 				}else{
-					beta = MIN(beta, re);
+					if(re < beta){
+						res->x = j;
+						res->y = i;
+						beta = re;
+					}
 					if(alpha >= beta){
-						res->x = r.x;
-						res->y = r.y;
 						return beta;
 					}
 				}
-				res->x = j;
-				res->y = i;
 			}
 		}
 	}
@@ -108,8 +105,6 @@ QuartoPiece get_available(QuartoBoard *board)
 			tmp = GET_PIECE(i, j, board->board);
 			if(is_valid_piece(&tmp)){
 				available[tmp.piece] = 0;
-			}else{
-				available[tmp.piece] = 1;
 			}
 		}
 	}
@@ -147,7 +142,7 @@ QuartoPiece create_piece_from_int(unsigned char val)
 }
 int is_valid_piece(QuartoPiece *piece)
 {
-	if(piece->piece >= 0 && piece->piece < 16){
+	if(piece != NULL && piece->piece >= 0 && piece->piece < 16){
 		return 1;
 	}else{
 		return 0;
