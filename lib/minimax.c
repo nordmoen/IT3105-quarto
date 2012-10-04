@@ -99,6 +99,12 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 QuartoPiece get_available(QuartoBoard *board)
 {
 	int available[16];
+	for(int i = 0; i < 16; i++){
+		//Because C doesn't like to place information in a new array
+		//we need to do it explicit to ensure that none of the elements
+		//are 0 by default
+		available[i] = 1;
+	}
 	QuartoPiece tmp;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
@@ -241,7 +247,6 @@ parse_minimax(PyObject *self, PyObject *args)
 	QuartoPiece p = create_piece_from_int(piece);
 	QuartoBoard b;
 	parse_board(board, &b);
-	debug_print_board(&b);
 	if(PyErr_Occurred() != NULL){
 		return NULL;
 	}
