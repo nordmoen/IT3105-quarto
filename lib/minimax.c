@@ -61,7 +61,7 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					return 0;
 				}
 				int available[16];
-				prep_available(board, available);
+				prep_available(&newBoard, available);
 				for(int k = 0; k < 16; k++){
 					if(available[k]){
 						int re = minimax(create_piece_from_int(k), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
@@ -136,7 +136,33 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 //This method should return a value between [1, 100] where 1 is shait and 100 is great
 int quarto_herustic(QuartoBoard *board)
 {
-	return 42;
+	if(board->size > 4){
+		for(int i = 0; i < 4; i++){
+			//Horizontal
+			if(pieces_equal(GET_PIECE(0,i, board->board), GET_PIECE(1,i, board->board),
+				GET_PIECE(2,i, board->board), GET_PIECE(3,i, board->board))){
+				return 100;
+			}
+			//Vertical
+			if(pieces_equal(GET_PIECE(i,0, board->board), GET_PIECE(i,1, board->board),
+				GET_PIECE(i,2, board->board), GET_PIECE(i,3, board->board))){
+				return 100;
+			}
+		}
+		if(pieces_equal(GET_PIECE(0,0 board->board),GET_PIECE(1,1 board->board),
+			GET_PIECE(2,2 board->board), GET_PIECE(3,3 board->board))){
+			return 100;
+		}
+		if(pieces_equal(GET_PIECE(0,3 board->board),GET_PIECE(1,2 board->board),
+			GET_PIECE(2,1 board->board), GET_PIECE(3,0 board->board))){
+			return 100;
+		}
+	}else{
+		//Return 1 at the moment since there can't be a win here
+		//but we should try to detect smart moves, if there are three in
+		//a row and so on
+		return 1;
+	}
 }
 
 QuartoPiece create_piece_from_int(unsigned char val)
@@ -241,6 +267,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	}
 	if(piece < 0 || piece > 15){
 		PyErr_SetString(PyExc_ValueError, "Piece is out of range for [0, 15]");
+		return NULL;
 	}
 
 	
