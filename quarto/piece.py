@@ -24,6 +24,9 @@ class Piece:
             return self.val & other.val > 0 or self.xor_val & other.xor_val > 0
         except AttributeError:
             return False
+    
+    def __nonzero__(self):
+        return True
 
     def __nq__(self, other):
         return not self == other

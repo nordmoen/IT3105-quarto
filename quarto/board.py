@@ -15,7 +15,7 @@ class Board:
             self.placed += 1
 
     def get(self, x, y):
-        return self.board[y][x] if self.board[y][x] else None
+        return self.board[y][x]
 
     def check_victory(self, pos):
         start_piece = self.get(*pos)
@@ -41,16 +41,26 @@ class Board:
         return '\n'.join(', '.join(str(piece) if piece else ' '*4 for piece in row) for row in self.board)
     def __repr(self):
         return repr(self.board)
+    
+    def get_column(self, x):
+        return [self.get(x, i) for i in range(4)]
+    
+    def get_row(self, y):
+        return [self.get(i, y) for i in range(4)]
+    
+    def get_diagonal(self, top=True):
+        return [self.get(i, i if top else 3-i) for i in range(4)]
 
 
 class PlaceTakenError(Exception):
     """Exception raised when a piece is tried to be placed
     on top of another piece"""
 
-    def __init__(self, pos, board=''):
+    def __init__(self, pos, player='', board=''):
         self.pos = pos
+        self.player = player
         self.board = board
 
     def __str__(self):
-        return 'A piece is already placed in x: {x_pos}, y: {y_pos}\n{b}'.format(
-                x_pos=self.pos[0], y_pos=self.pos[1], b=self.board)
+        return 'Player {player} tried to place at an illegal placement, a piece is already placed in x: {x_pos}, y: {y_pos}\n{b}'.format(
+                x_pos=self.pos[0], y_pos=self.pos[1], b=self.board, player=self.player)

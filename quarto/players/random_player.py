@@ -7,7 +7,7 @@ class RandomPlayer:
     def __init__(self):
         self.placePiece = None
 
-    def get_piece(self, pieces):
+    def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
         can be copied to the other players'''
         if self.placePiece:

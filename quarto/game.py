@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from board import Board
+from board import Board, PlaceTakenError
 from piece import Piece
 
 class Game:
@@ -12,15 +12,18 @@ class Game:
     def play(self):
         board = Board()
         pieces = {i:Piece(val=i) for i in range(16)}
-        placePiece = self.p1.get_piece(pieces.values())
+        placePiece = self.p1.get_piece(board, pieces.values())
         del pieces[placePiece.val]
         nextPlayer = self.p2
         victory = None
         while not victory and board.placed != 16:
             placePos = nextPlayer.get_placement(board, placePiece, pieces.values())
-            board.place(placePiece, *placePos)
+            try:
+                board.place(placePiece, *placePos)
+            except PlaceTakenError:
+                raise PlaceTakenError(placePos, '1' if nextPlayer==self.p1 else '2', board)
             if pieces:
-                placePiece = nextPlayer.get_piece(pieces.values())
+                placePiece = nextPlayer.get_piece(board, pieces.values())
                 del pieces[placePiece.val]
             victory = board.check_victory(placePos)
             if nextPlayer == self.p1:
