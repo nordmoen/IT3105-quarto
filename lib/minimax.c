@@ -19,6 +19,7 @@ typedef struct{
 typedef struct{
 	unsigned char x;
 	unsigned char y;
+	unsigned char next_piece;
 }MinimaxRes;
 
 //Prototypes:
@@ -28,8 +29,8 @@ int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
 int quarto_herustic(QuartoBoard *board);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
-QuartoPiece get_available(QuartoBoard *board);
 void debug_print_board(QuartoBoard *board);
+void prep_available(QuartoBoard *board, int *available);
 
 //a is the piece we want to place on the board
 //board is the board filled in with some possibilities
@@ -59,30 +60,38 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					PyErr_SetString(PyExc_RuntimeError, "Tried to place a piece in a position which could not be placed");
 					return 0;
 				}
-				int re = minimax(get_available(&newBoard), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
-				if(!re){
-					//Something must have gone wrong longer down in the call stack
-					//so just return 0 to indicate upwards that an error need to
-					//be signaled to Python
-					return 0;
-				}
-				if(isMax == 1){
-					if(re > alpha){
-						res->x = j;
-						res->y = i;
-						alpha = re;
-					}
-					if(alpha >= beta){
-						return alpha;
-					}
-				}else{
-					if(re < beta){
-						res->x = j;
-						res->y = i;
-						beta = re;
-					}
-					if(alpha >= beta){
-						return beta;
+				int available[16];
+				prep_available(board, available);
+				for(int k = 0; k < 16; k++){
+					if(available[k]){
+						int re = minimax(create_piece_from_int(k), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
+						if(!re){
+							//Something must have gone wrong longer down in the call stack
+							//so just return 0 to indicate upwards that an error need to
+							//be signaled to Python
+							return 0;
+						}
+						if(isMax == 1){
+							if(re > alpha){
+								res->x = j;
+								res->y = i;
+								res->next_piece = k;
+								alpha = re;
+							}
+							if(alpha >= beta){
+								return alpha;
+							}
+						}else{
+							if(re < beta){
+								res->x = j;
+								res->y = i;
+								res->next_piece = k;
+								beta = re;
+							}
+							if(alpha >= beta){
+								return beta;
+							}
+						}
 					}
 				}
 			}
@@ -113,55 +122,6 @@ void prep_available(QuartoBoard *board, int *available)
 	}
 }
 
-//Get the next piece, but looping over all the available ones and
-//seeing which one gets the lowest overall score from our herustics
-//The lowest score should mean that the piece is hard to place good
-//We use the lowest to enusure that we play our best agains
-//an optimal opponent. There might be a piece which when placed
-//badly will give us the win, but this should ensure that we can
-//compete with the better players
-unsigned char get_next_piece(QuartoBoard *board)
-{
-	int available[16];
-	prep_available(board, available);
-	int best_score = 100000;
-	int next_piece = -1;
-	for(int i = 0; i < 16; i++){
-		int sum = 0;
-		if(available[i]){
-			for(int j = 0; j < 4; j++){
-				for(int k = 0; k < 4; k++){
-					if(!is_valid_piece(&GET_PIECE(k, j, board->board))){
-						QuartoBoard newBoard = *board;
-						SET_PIECE(k, j, newBoard.board, create_piece_from_int(i));
-						sum += quarto_herustic(&newBoard);
-					}
-				}
-			}
-			if(sum < best_score){
-				best_score = sum;
-				next_piece = i;
-			}
-		}
-	}
-	if(next_piece == -1){
-		PyErr_SetString(PyExc_RuntimeError, "Could not find a next piece");
-	}
-	return next_piece;
-}
-
-QuartoPiece get_available(QuartoBoard *board)
-{
-	int available[16];
-	prep_available(board, available);
-	for(int i = 0; i < 16; i++){
-		if(available[i]){
-			return create_piece_from_int(i);
-		}
-	}
-	return create_piece_from_int(16);
-}
-
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 {
 	if(board->size < 16 && is_valid_piece(piece)){
@@ -173,7 +133,7 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 	}
 }
 
-//This method should return a value between [1, 100] where 1 is shait and 100 is greate
+//This method should return a value between [1, 100] where 1 is shait and 100 is great
 int quarto_herustic(QuartoBoard *board)
 {
 	return 42;
@@ -295,15 +255,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	if(!minimax(p, &b, &result, 1, ply, -1000, 1000)){
 		return NULL;
 	}
-	SET_PIECE(result.x, result.y, b.board, p);
-	unsigned char next = get_next_piece(&b);
-	if(b.size < 16 && next == -1){
-		//This means that there should have been a piece available
-		//but we could not find it so we need to indicate an error
-		return NULL;
-	}
-
-	return Py_BuildValue("(ii)i", result.x, result.y, next);
+	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	
 
 static PyMethodDef MiniMaxMethods[] = {
