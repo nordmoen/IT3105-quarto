@@ -1,8 +1,8 @@
 #include <Python.h>
 #include <string.h>
 
-#define GET_PIECE(x, y, board) board[y*4 + x]
-#define SET_PIECE(x, y, board, piece) board[y*4+x]=piece
+#define GET_PIECE(x, y, board1) board1[y*4 + x]
+#define SET_PIECE(x, y, board1, piece) board1[y*4+x]=piece
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -43,7 +43,7 @@ void prep_available(QuartoBoard *board, int *available);
 //size is the size of the above array of pieces
 int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int numPly, int alpha, int beta)
 {
-	if(numPly == 0 || board->size == 16){
+	if(numPly == 0){
 		//Return the value of this end state 
 		return quarto_herustic(board)*isMax;	
 	}
@@ -57,14 +57,19 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					PyErr_SetString(PyExc_RuntimeError, "Tried to place a piece in a position which could not be placed");
 					return 0;
 				}
+				int re;
 				int available[16];
 				prep_available(&newBoard, available);
 				for(int k = 0; k < 16; k++){
 					if(available[k]){
-						int re = minimax(create_piece_from_int(k), &newBoard, &r, isMax*-1, numPly-1, alpha, beta);
+						re = minimax(create_piece_from_int(k), 
+								&newBoard, &r, isMax*-1, 
+								numPly-1, alpha, beta);
 						if(!re){
-							//Something must have gone wrong longer down in the call stack
-							//so just return 0 to indicate upwards that an error need to
+							//Something must have gone wrong 
+							//longer down in the call stack
+							//so just return 0 to indicate 
+							//upwards that an error need to
 							//be signaled to Python
 							return 0;
 						}
@@ -281,6 +286,10 @@ parse_minimax(PyObject *self, PyObject *args)
 		if(!PyErr_Occurred()){
 			PyErr_SetString(PyExc_RuntimeError, "Minimax returned 0 and no error was set...");
 		}
+		return NULL;
+	}
+	if(result.x == -1 || result.y == -1){
+		PyErr_SetString(PyExc_RuntimeError, "Minimax did not find any suitable xy position");
 		return NULL;
 	}
 	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
