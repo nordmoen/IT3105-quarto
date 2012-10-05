@@ -43,9 +43,6 @@ void prep_available(QuartoBoard *board, int *available);
 //size is the size of the above array of pieces
 int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int numPly, int alpha, int beta)
 {
-	//If this method always selects the last element in the piecesLeft array and
-	//decrease the size with one, we don't need to create a new array each time thus saving lots
-	//of calls and time
 	if(numPly == 0 || board->size == 16){
 		//Return the value of this end state 
 		return quarto_herustic(board)*isMax;	
@@ -139,24 +136,25 @@ int quarto_herustic(QuartoBoard *board)
 	if(board->size > 4){
 		for(int i = 0; i < 4; i++){
 			//Horizontal
-			if(pieces_equal(GET_PIECE(0,i, board->board), GET_PIECE(1,i, board->board),
-				GET_PIECE(2,i, board->board), GET_PIECE(3,i, board->board))){
+			if(pieces_equal(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
+				&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
 				return 100;
 			}
 			//Vertical
-			if(pieces_equal(GET_PIECE(i,0, board->board), GET_PIECE(i,1, board->board),
-				GET_PIECE(i,2, board->board), GET_PIECE(i,3, board->board))){
+			if(pieces_equal(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
+				&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
 				return 100;
 			}
 		}
-		if(pieces_equal(GET_PIECE(0,0 board->board),GET_PIECE(1,1 board->board),
-			GET_PIECE(2,2 board->board), GET_PIECE(3,3 board->board))){
+		if(pieces_equal(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
+			&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
 			return 100;
 		}
-		if(pieces_equal(GET_PIECE(0,3 board->board),GET_PIECE(1,2 board->board),
-			GET_PIECE(2,1 board->board), GET_PIECE(3,0 board->board))){
+		if(pieces_equal(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
+			&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
 			return 100;
 		}
+		return 1;
 	}else{
 		//Return 1 at the moment since there can't be a win here
 		//but we should try to detect smart moves, if there are three in
@@ -197,7 +195,7 @@ int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
 		return 0;
 	}
 }
-void parse_board(PyObject *board, QuartoBoard *newBoard)
+int parse_board(PyObject *board, QuartoBoard *newBoard)
 {
 	//Board must be 4x4!
 	int outer_size, inner_size = 0;
@@ -208,7 +206,7 @@ void parse_board(PyObject *board, QuartoBoard *newBoard)
 	if(outer_size != 4 || inner_size != 4){
 		PyErr_SetString(PyExc_TypeError, "The array passed into this function\
 is not a 4x4 array");
-		return;
+		return 0;
 	}
 	PyObject *row;
 	PyObject *item;
@@ -219,7 +217,7 @@ is not a 4x4 array");
 			item = PySequence_GetItem(row, j);
 			if(item != Py_None && !PyInt_Check(item)){
 				PyErr_SetString(PyExc_TypeError, "Expected Integers values or None");
-				return;
+				return 0;
 			}
 			if(item == Py_None){
 				SET_PIECE(j, i, newBoard->board, create_piece_from_int(16));
@@ -235,6 +233,7 @@ is not a 4x4 array");
 		}
 	}
 	newBoard->size = size;
+	return 1;
 }
 
 void debug_print_board(QuartoBoard *board)
@@ -273,13 +272,15 @@ parse_minimax(PyObject *self, PyObject *args)
 	
 	QuartoPiece p = create_piece_from_int(piece);
 	QuartoBoard b;
-	parse_board(board, &b);
-	if(PyErr_Occurred() != NULL){
+	if(!parse_board(board, &b)){
 		return NULL;
 	}
 
 	MinimaxRes result;
-	if(!minimax(p, &b, &result, 1, ply, -1000, 1000)){
+	if(!minimax(p, &b, &result, 1, ply, -1000000, 1000000)){
+		if(!PyErr_Occurred()){
+			PyErr_SetString(PyExc_RuntimeError, "Minimax returned 0 and no error was set...");
+		}
 		return NULL;
 	}
 	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);

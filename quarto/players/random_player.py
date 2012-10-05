@@ -2,7 +2,7 @@
 
 from random import choice
 
-class RandomPlayer:
+class RandomPlayer(object):
     '''A random Quarto player implementation'''
     def __init__(self):
         self.placePiece = None

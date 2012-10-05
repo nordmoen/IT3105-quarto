@@ -50,6 +50,9 @@ class Board:
     
     def get_diagonal(self, top=True):
         return [self.get(i, i if top else 3-i) for i in range(4)]
+    
+    def get_board(self):
+        return [[p.val if p else p for p in row] for row in self.board]
 
 
 class PlaceTakenError(Exception):

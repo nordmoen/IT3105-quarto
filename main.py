@@ -2,7 +2,7 @@
 
 import argparse
 from quarto import quarto
-from quarto.players import random_player, human_player, novice_player
+from quarto.players import random_player, human_player, novice_player, minimax_player
 
 def play_quarto(args):
     p1 = create_player(args.player1)
@@ -22,8 +22,12 @@ def create_player(args):
         return human_player.HumanPlayer()
     elif type == 'minimax':
         try:
-            difficulty = args[1]
-            raise NotImplementedError('MiniMax player is not implemented yet')
+            difficulty = int(args[1])
+            if len(args) > 2:
+                when_to_change = int(args[2])
+            else:
+                when_to_change = 6
+            return minimax_player.MinimaxPlayer(difficulty, when_to_change)
         except IndexError:
             print 'No difficulty selected for player!'
             raise
