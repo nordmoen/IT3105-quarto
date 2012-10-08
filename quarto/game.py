@@ -33,8 +33,7 @@ class Game:
         if not victory:
             winningPlayer = None
         elif nextPlayer == self.p1:
-          winningPlayer = 2
+          winningPlayer = self.p2
         else:
-          winningPlayer = 1
-        self.p1, self.p2 = self.p2, self.p1 #Swap arround in case we play more than once
+          winningPlayer = self.p1
         return (winningPlayer, board, victory, placePos)
