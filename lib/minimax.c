@@ -44,14 +44,22 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 				set_piece(&newB, j, i, &a);
 				int quarto_value = quarto_herustic(&newB);
 				if(newB.size == 16){
+					//This placement filled up the board which means that
+					//we can't go further down so we just update the x, j
+					//and return the value of this end state
 					res->x = j;
 					res->y = i;
 					return quarto_value*(-1);
 				}else if(quarto_value == 100){
+					//This is the maximum we can get, which means that we won the game
+					//no reason to go further down since this lead to a victory
 					res->x = j;
 					res->y = i;
 					return -100;
 				}else if(numPly == 0){
+					//We have reached the bottom of the recursion
+					//and we need only evaluate the possible placements
+					//of the piece that we have gotten
 					if(quarto_value < local_beta){
 						local_beta = quarto_value;
 						res->x = j;
@@ -66,11 +74,20 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 							MinimaxRes r;
 							int value = maxValue(create_piece_from_int(k), &newB, &r, numPly-1, alpha, local_beta);
 							if(value < local_beta){
+								//The value we got from below is smaller
+								//than the best beta we have found which
+								//means we want that, so we need to update
+								//x, y and update beta
 								res->x = j;
 								res->y = i;
 								res->next_piece = k;
 								local_beta = value;
 							}
+							//Our beta value is smaller than alpha
+							//which means that the max "node" above
+							//will always chose the path which leads
+							//to that alpha value and there is no use
+							//in recursing any more
 							if(local_beta <= alpha) return local_beta*(-1);
 						}
 					}
@@ -91,14 +108,22 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 				set_piece(&newB, j, i, &a);
 				int quarto_value = quarto_herustic(&newB);
 				if(newB.size == 16){
+					//This placement filled up the board which means that
+					//we can't go further down so we just update the x, j
+					//and return the value of this end state
 					res->x = j;
 					res->y = i;
 					return quarto_value;
 				}else if(quarto_value == 100){
+					//This is the maximum we can get, which means that we won the game
+					//no reason to go further down since this lead to a victory
 					res->x = j;
 					res->y = i;
 					return 100;
 				}else if(numPly == 0){
+					//We have reached the bottom of the recursion
+					//and we need only evaluate the possible placements
+					//of the piece that we have gotten
 					if(quarto_value > local_alpha){
 						local_alpha = quarto_value;
 						res->x = j;
@@ -113,11 +138,18 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 							MinimaxRes r;
 							int value = minValue(create_piece_from_int(k), &newB, &r, numPly-1,local_alpha, beta);
 							if(value > local_alpha){
+								//The value we got from below is better
+								//than what we have currently found
+								//which means we need to keep this
+								//position and update our alpha
 								res->x = j;
 								res->y = i;
 								res->next_piece = k;
 								local_alpha = value;
 							}
+							//If alpha is lager than beta there is
+							//no use continuing because the min node above
+							//will always chose the path that lead to beta
 							if(local_alpha >= beta) return local_alpha;
 						}
 					}
