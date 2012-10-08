@@ -44,8 +44,12 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 				set_piece(&newB, j, i, &a);
 				int quarto_value = quarto_herustic(&newB);
 				if(newB.size == 16){
+					res->x = j;
+					res->y = i;
 					return quarto_value*(-1);
 				}else if(quarto_value == 100){
+					res->x = j;
+					res->y = i;
 					return -100;
 				}else if(numPly == 0){
 					if(quarto_value < local_beta){
@@ -87,8 +91,12 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 				set_piece(&newB, j, i, &a);
 				int quarto_value = quarto_herustic(&newB);
 				if(newB.size == 16){
+					res->x = j;
+					res->y = i;
 					return quarto_value;
 				}else if(quarto_value == 100){
+					res->x = j;
+					res->y = i;
 					return 100;
 				}else if(numPly == 0){
 					if(quarto_value > local_alpha){
@@ -296,6 +304,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	}
 
 	MinimaxRes result;
+	result.next_piece = -1;
 	maxValue(p, &b, &result, ply, -1000000, 1000000);
 	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	

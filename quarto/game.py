@@ -36,4 +36,5 @@ class Game:
           winningPlayer = 2
         else:
           winningPlayer = 1
+        self.p1, self.p2 = self.p2, self.p1 #Swap arround in case we play more than once
         return (winningPlayer, board, victory, placePos)

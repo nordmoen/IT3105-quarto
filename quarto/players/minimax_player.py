@@ -23,6 +23,7 @@ class MinimaxPlayer(NovicePlayer):
 
     def reset(self):
         self.change = self.initial_change
+        self.placePiece = None
     
     def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
@@ -33,11 +34,12 @@ class MinimaxPlayer(NovicePlayer):
         if self.placePiece:
             return self.placePiece
         else:
+            #return NovicePlayer.get_piece(self, board, pieces)
             return choice(pieces)
 
     def get_placement(self, board, piece, pieces):
         if self.change > 0:
-            self.change -= 1
+            self.change -= 2
             #return super(MinimaxPlayer, self).get_placement(board, piece, pieces)
             return NovicePlayer.get_placement(self, board, piece, pieces)
         else:
