@@ -7,6 +7,8 @@ def main(player1, player2, num_rounds, simulate=False):
     res = [0,0]
     for i in range(num_rounds):
         winner, board, win_pos, last_placed_pos = game.play()
+        player1.reset()
+        player2.reset()
         if winner:
             res[winner - 1] += 1
         if not simulate:

@@ -15,6 +15,9 @@ class RandomPlayer(object):
         else:
             return choice(pieces)
 
+    def reset(self):
+        pass
+
     def get_placement(self, board, piece, pieces):
         '''Decide where to put #piece on the #board, and which
         piece from the possible #pieces to return to the other player'''

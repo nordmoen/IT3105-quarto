@@ -27,85 +27,99 @@ QuartoPiece create_piece_from_int(unsigned char val);
 int is_valid_piece(QuartoPiece *piece);
 int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
-int quarto_herustic(QuartoBoard *board, int isMax);
+int quarto_herustic(QuartoBoard *board);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
 void debug_print_board(QuartoBoard *board);
 void prep_available(QuartoBoard *board, int *available);
+int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
+int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
 
-//a is the piece we want to place on the board
-//board is the board filled in with some possibilities
-//res is the result we want to return to the calls above
-//isMax is either 1 or -1 depicting whether or not this call is a max or min call
-//numPly is the ply level we are at, should decrease with one for each new call
-//alpha is the alpha value
-//beta is the beta value
-//piecesLeft are the Quarto pieces that still have not been placed on the board
-//size is the size of the above array of pieces
-int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int numPly, int alpha, int beta)
+int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
 {
-	MinimaxRes r;
+	int local_beta = beta;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
-				//We can try to place a piece here
-				QuartoBoard newBoard = *board;
-				if(!set_piece(&newBoard, j, i, &a)){
-					PyErr_SetString(PyExc_RuntimeError, "Tried to place a piece in a position which could not be placed");
-					return 0;
-				}
-				int re;
-				if(numPly == 0 || newBoard.size == 16){
-					return quarto_herustic(board, isMax);
-
+				QuartoBoard newB = *board;
+				set_piece(&newB, j, i, &a);
+				int quarto_value = quarto_herustic(&newB);
+				if(newB.size == 16){
+					return quarto_value*(-1);
+				}else if(quarto_value == 100){
+					return -100;
+				}else if(numPly == 0){
+					if(quarto_value < local_beta){
+						local_beta = quarto_value;
+						res->x = j;
+						res->y = i;
+					}
 				}else{
-					int available[16];
-					prep_available(&newBoard, available);
+					int pieces_left[16]; //Array with 0 or 1 to indicate if the pieces
+					//in that index is available
+					prep_available(&newB, pieces_left);
 					for(int k = 0; k < 16; k++){
-						if(available[k]){
-							re = minimax(create_piece_from_int(k), 
-									&newBoard, &r, isMax*-1, 
-									numPly-1, alpha, beta);
-							if(!re){
-								//Something must have gone wrong 
-								//longer down in the call stack
-								//so just return 0 to indicate 
-								//upwards that an error need to
-								//be signaled to Python
-								return 0;
+						if(pieces_left[k]){
+							MinimaxRes r;
+							int value = maxValue(create_piece_from_int(k), &newB, &r, numPly-1, alpha, local_beta);
+							if(value < local_beta){
+								res->x = j;
+								res->y = i;
+								res->next_piece = k;
+								local_beta = value;
 							}
-							if(isMax == 1){
-								if(re > alpha){
-									res->x = j;
-									res->y = i;
-									res->next_piece = k;
-									alpha = re;
-								}
-								if(alpha >= beta){
-									return alpha;
-								}
-							}else{
-								if(re < beta){
-									res->x = j;
-									res->y = i;
-									res->next_piece = k;
-									beta = re;
-								}
-								if(alpha >= beta){
-									return beta;
-								}
-							}
+							if(local_beta <= alpha) return local_beta*(-1);
 						}
 					}
 				}
 			}
 		}
 	}
-	if(isMax == 1){
-		return alpha;
-	}else{
-		return beta;
-	}
+	return local_beta*(-1);
 }
+
+int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
+{
+	int local_alpha = alpha;
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
+				QuartoBoard newB = *board;
+				set_piece(&newB, j, i, &a);
+				int quarto_value = quarto_herustic(&newB);
+				if(newB.size == 16){
+					return quarto_value;
+				}else if(quarto_value == 100){
+					return 100;
+				}else if(numPly == 0){
+					if(quarto_value > local_alpha){
+						local_alpha = quarto_value;
+						res->x = j;
+						res->y = i;
+					}
+				}else{
+					int pieces_left[16]; //Array with 0 or 1 to indicate if the pieces
+					//in that index is available
+					prep_available(&newB, pieces_left);
+					for(int k = 0; k < 16; k++){
+						if(pieces_left[k]){
+							MinimaxRes r;
+							int value = minValue(create_piece_from_int(k), &newB, &r, numPly-1,local_alpha, beta);
+							if(value > local_alpha){
+								res->x = j;
+								res->y = i;
+								res->next_piece = k;
+								local_alpha = value;
+							}
+							if(local_alpha >= beta) return local_alpha;
+						}
+					}
+				}
+			}
+		}
+	}
+	return local_alpha;
+}
+
 void prep_available(QuartoBoard *board, int *available)
 {
 	for(int i = 0; i < 16; i++){
@@ -136,38 +150,36 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 	}
 }
 
-//This method should return a value between [1, 100] where 1 is shait and 100 is great
-//board is the quarto board to evaluate and isMax is a value of either 1 or -1 to indicate
-//if it is a max or min evaluation
-int quarto_herustic(QuartoBoard *board, int isMax)
+//This method should return a value between [0, 100] where 0 is shait and 100 is great
+int quarto_herustic(QuartoBoard *board)
 {
-	if(board->size > 4){
+	if(board->size >= 4){
 		for(int i = 0; i < 4; i++){
 			//Horizontal
 			if(pieces_equal(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
 				&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
-				return 100*isMax;
+				return 100;
 			}
 			//Vertical
 			if(pieces_equal(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
 				&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
-				return 100*isMax;
+				return 100;
 			}
 		}
 		if(pieces_equal(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
 			&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
-			return 100*isMax;
+			return 100;
 		}
 		if(pieces_equal(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
 			&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
-			return 100*isMax;
+			return 100;
 		}
-		return 1;
+		return 0;
 	}else{
 		//Return 1 at the moment since there can't be a win here
 		//but we should try to detect smart moves, if there are three in
 		//a row and so on
-		return 1;
+		return 0;
 	}
 }
 
@@ -277,7 +289,6 @@ parse_minimax(PyObject *self, PyObject *args)
 		return NULL;
 	}
 
-	
 	QuartoPiece p = create_piece_from_int(piece);
 	QuartoBoard b;
 	if(!parse_board(board, &b)){
@@ -285,16 +296,7 @@ parse_minimax(PyObject *self, PyObject *args)
 	}
 
 	MinimaxRes result;
-	if(!minimax(p, &b, &result, 1, ply, -1000000, 1000000)){
-		if(!PyErr_Occurred()){
-			PyErr_SetString(PyExc_RuntimeError, "Minimax returned 0 and no error was set...");
-		}
-		return NULL;
-	}
-	if(result.x == -1 || result.y == -1){
-		PyErr_SetString(PyExc_RuntimeError, "Minimax did not find any suitable xy position");
-		return NULL;
-	}
+	maxValue(p, &b, &result, ply, -1000000, 1000000);
 	return Py_BuildValue("(ii)i", result.x, result.y, result.next_piece);
 }	
 

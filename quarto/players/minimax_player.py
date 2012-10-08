@@ -16,9 +16,13 @@ class MinimaxPlayer(NovicePlayer):
             raise ValueError('Plies need to be between (0, 15]. Ply was {p}'.format(p=plys))
         if(0 <= change <= 15):
             self.change = change
+            self.initial_change = change
         else:
             raise ValueError('The change position was out of range. Legal range [0, 15], was {}'.format(change))
         self.placePiece = None
+
+    def reset(self):
+        self.change = self.initial_change
     
     def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
@@ -33,7 +37,7 @@ class MinimaxPlayer(NovicePlayer):
 
     def get_placement(self, board, piece, pieces):
         if self.change > 0:
-            self.change -= 2
+            self.change -= 1
             #return super(MinimaxPlayer, self).get_placement(board, piece, pieces)
             return NovicePlayer.get_placement(self, board, piece, pieces)
         else:
