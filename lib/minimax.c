@@ -27,7 +27,7 @@ QuartoPiece create_piece_from_int(unsigned char val);
 int is_valid_piece(QuartoPiece *piece);
 int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
-int quarto_herustic(QuartoBoard *board);
+int quarto_herustic(QuartoBoard *board, int isMax);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
 void debug_print_board(QuartoBoard *board);
 void prep_available(QuartoBoard *board, int *available);
@@ -43,10 +43,6 @@ void prep_available(QuartoBoard *board, int *available);
 //size is the size of the above array of pieces
 int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int numPly, int alpha, int beta)
 {
-	if(numPly == 0){
-		//Return the value of this end state 
-		return quarto_herustic(board)*isMax;	
-	}
 	MinimaxRes r;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
@@ -58,40 +54,45 @@ int minimax(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int isMax, int n
 					return 0;
 				}
 				int re;
-				int available[16];
-				prep_available(&newBoard, available);
-				for(int k = 0; k < 16; k++){
-					if(available[k]){
-						re = minimax(create_piece_from_int(k), 
-								&newBoard, &r, isMax*-1, 
-								numPly-1, alpha, beta);
-						if(!re){
-							//Something must have gone wrong 
-							//longer down in the call stack
-							//so just return 0 to indicate 
-							//upwards that an error need to
-							//be signaled to Python
-							return 0;
-						}
-						if(isMax == 1){
-							if(re > alpha){
-								res->x = j;
-								res->y = i;
-								res->next_piece = k;
-								alpha = re;
+				if(numPly == 0 || newBoard.size == 16){
+					return quarto_herustic(board, isMax);
+
+				}else{
+					int available[16];
+					prep_available(&newBoard, available);
+					for(int k = 0; k < 16; k++){
+						if(available[k]){
+							re = minimax(create_piece_from_int(k), 
+									&newBoard, &r, isMax*-1, 
+									numPly-1, alpha, beta);
+							if(!re){
+								//Something must have gone wrong 
+								//longer down in the call stack
+								//so just return 0 to indicate 
+								//upwards that an error need to
+								//be signaled to Python
+								return 0;
 							}
-							if(alpha >= beta){
-								return alpha;
-							}
-						}else{
-							if(re < beta){
-								res->x = j;
-								res->y = i;
-								res->next_piece = k;
-								beta = re;
-							}
-							if(alpha >= beta){
-								return beta;
+							if(isMax == 1){
+								if(re > alpha){
+									res->x = j;
+									res->y = i;
+									res->next_piece = k;
+									alpha = re;
+								}
+								if(alpha >= beta){
+									return alpha;
+								}
+							}else{
+								if(re < beta){
+									res->x = j;
+									res->y = i;
+									res->next_piece = k;
+									beta = re;
+								}
+								if(alpha >= beta){
+									return beta;
+								}
 							}
 						}
 					}
@@ -136,28 +137,30 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 }
 
 //This method should return a value between [1, 100] where 1 is shait and 100 is great
-int quarto_herustic(QuartoBoard *board)
+//board is the quarto board to evaluate and isMax is a value of either 1 or -1 to indicate
+//if it is a max or min evaluation
+int quarto_herustic(QuartoBoard *board, int isMax)
 {
 	if(board->size > 4){
 		for(int i = 0; i < 4; i++){
 			//Horizontal
 			if(pieces_equal(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
 				&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
-				return 100;
+				return 100*isMax;
 			}
 			//Vertical
 			if(pieces_equal(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
 				&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
-				return 100;
+				return 100*isMax;
 			}
 		}
 		if(pieces_equal(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
 			&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
-			return 100;
+			return 100*isMax;
 		}
 		if(pieces_equal(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
 			&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
-			return 100;
+			return 100*isMax;
 		}
 		return 1;
 	}else{

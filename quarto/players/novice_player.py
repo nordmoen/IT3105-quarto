@@ -9,7 +9,8 @@ class NovicePlayer(RandomPlayer):
         if win:
             return pos
         else:
-            return super(NovicePlayer, self).get_placement(board, piece, pieces)
+            #return super(NovicePlayer, self).get_placement(board, piece, pieces)
+            return RandomPlayer.get_placement(self, board, piece, pieces)
     
     def get_piece(self, board, pieces):
         for piece in pieces:
