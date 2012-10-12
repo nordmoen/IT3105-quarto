@@ -17,8 +17,8 @@ def main(player1, player2, num_rounds, simulate=False):
     if simulate:
         print 'Game statistics:'
         print 'Total games played: {}'.format(num_rounds)
-        print 'Player 1 won: {}'.format(res[player1])
-        print 'Player 2 won: {}'.format(res[player2])
+        print 'Player 1 won: {}, {}%'.format(res[player1], int((float(res[player1])/num_rounds)*100))
+        print 'Player 2 won: {}, {}%'.format(res[player2], int((float(res[player2])/num_rounds)*100))
         print 'Ties: {}'.format(num_rounds-(res[player1] + res[player2]))
 
 def print_game_stats(player1, player2, winner, board, win_pos, last):

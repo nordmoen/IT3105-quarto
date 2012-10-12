@@ -27,6 +27,7 @@ QuartoPiece create_piece_from_int(unsigned char val);
 int is_valid_piece(QuartoPiece *piece);
 int piece_equal(QuartoPiece *a, QuartoPiece *b);
 int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
+int quarto_win(QuartoBoard *board);
 int quarto_herustic(QuartoBoard *board);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
 void debug_print_board(QuartoBoard *board);
@@ -42,15 +43,15 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
 				QuartoBoard newB = *board;
 				set_piece(&newB, j, i, &a);
-				int quarto_value = quarto_herustic(&newB);
+				int won = quarto_win(&newB);
 				if(newB.size == 16){
 					//This placement filled up the board which means that
 					//we can't go further down so we just update the x, j
 					//and return the value of this end state
 					res->x = j;
 					res->y = i;
-					return quarto_value*(-1);
-				}else if(quarto_value == 100){
+					return quarto_herustic(&newB);
+				}else if(won){
 					//This is the maximum we can get, which means that we won the game
 					//no reason to go further down since this lead to a victory
 					res->x = j;
@@ -60,11 +61,13 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					//We have reached the bottom of the recursion
 					//and we need only evaluate the possible placements
 					//of the piece that we have gotten
+					int quarto_value = quarto_herustic(&newB);
 					if(quarto_value < local_beta){
 						local_beta = quarto_value;
 						res->x = j;
 						res->y = i;
 					}
+					if(local_beta <= alpha) return local_beta*(-1);
 				}else{
 					int pieces_left[16]; //Array with 0 or 1 to indicate if the pieces
 					//in that index is available
@@ -72,7 +75,9 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					for(int k = 0; k < 16; k++){
 						if(pieces_left[k]){
 							MinimaxRes r;
-							int value = maxValue(create_piece_from_int(k), &newB, &r, numPly-1, alpha, local_beta);
+							int value = maxValue(create_piece_from_int(k),
+								       	&newB, &r, numPly-1, 
+									alpha, local_beta);
 							if(value < local_beta){
 								//The value we got from below is smaller
 								//than the best beta we have found which
@@ -106,15 +111,15 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
 				QuartoBoard newB = *board;
 				set_piece(&newB, j, i, &a);
-				int quarto_value = quarto_herustic(&newB);
+				int won = quarto_win(&newB);
 				if(newB.size == 16){
 					//This placement filled up the board which means that
 					//we can't go further down so we just update the x, j
 					//and return the value of this end state
 					res->x = j;
 					res->y = i;
-					return quarto_value;
-				}else if(quarto_value == 100){
+					return quarto_herustic(&newB);
+				}else if(won){
 					//This is the maximum we can get, which means that we won the game
 					//no reason to go further down since this lead to a victory
 					res->x = j;
@@ -124,11 +129,13 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					//We have reached the bottom of the recursion
 					//and we need only evaluate the possible placements
 					//of the piece that we have gotten
+					int quarto_value = quarto_herustic(&newB);
 					if(quarto_value > local_alpha){
 						local_alpha = quarto_value;
 						res->x = j;
 						res->y = i;
 					}
+					if(local_alpha >= beta) return local_alpha;
 				}else{
 					int pieces_left[16]; //Array with 0 or 1 to indicate if the pieces
 					//in that index is available
@@ -136,7 +143,9 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					for(int k = 0; k < 16; k++){
 						if(pieces_left[k]){
 							MinimaxRes r;
-							int value = minValue(create_piece_from_int(k), &newB, &r, numPly-1,local_alpha, beta);
+							int value = minValue(create_piece_from_int(k), 
+									&newB, &r, numPly-1,
+									local_alpha, beta);
 							if(value > local_alpha){
 								//The value we got from below is better
 								//than what we have currently found
@@ -190,28 +199,36 @@ int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
 	}
 }
 
+int quarto_win(QuartoBoard *board)
+{
+	for(int i = 0; i < 4; i++){
+		//Horizontal
+		if(pieces_equal(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
+			&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
+			return 1;
+		}
+		//Vertical
+		if(pieces_equal(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
+			&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
+			return 1;
+		}
+	}
+	if(pieces_equal(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
+		&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
+		return 1;
+	}
+	if(pieces_equal(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
+		&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
+		return 1;
+	}
+	return 0;
+}
+
 //This method should return a value between [0, 100] where 0 is shait and 100 is great
 int quarto_herustic(QuartoBoard *board)
 {
 	if(board->size >= 4){
-		for(int i = 0; i < 4; i++){
-			//Horizontal
-			if(pieces_equal(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
-				&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
-				return 100;
-			}
-			//Vertical
-			if(pieces_equal(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
-				&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
-				return 100;
-			}
-		}
-		if(pieces_equal(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
-			&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
-			return 100;
-		}
-		if(pieces_equal(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
-			&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
+		if(quarto_win(board)){
 			return 100;
 		}
 		return 0;
