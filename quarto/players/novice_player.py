@@ -29,10 +29,12 @@ class NovicePlayer(RandomPlayer):
                     row[p] = piece
                     if check_four(*row):
                         return (True, (p, i))
+                    row[p] = None
                 if not col[p]:
                     col[p] = piece
                     if check_four(*col):
                         return (True, (i, p))
+                    col[p] = None
         diag1 = board.get_diagonal()
         diag2 = board.get_diagonal(False)
         for p in lewp:
@@ -40,8 +42,10 @@ class NovicePlayer(RandomPlayer):
                 diag1[p] = piece
                 if check_four(*diag1):
                     return (True, (p, p))
+                diag1[p] = None
             if not diag2[p]:
                 diag2[p] = piece
                 if check_four(*diag2):
                     return (True, (p, 3-p))
+                diag2[p] = None
         return (False, (-1, -1))

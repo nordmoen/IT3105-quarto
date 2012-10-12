@@ -52,6 +52,7 @@ class Piece:
 
 def check_four(a,b,c,d):
     try:
-        return a.val & b.val & c.val & d.val > 0 or a.xor_val & b.xor_val & c.xor_val & d.xor_val > 0
+        return (((a.val & b.val & c.val & d.val) > 0) or 
+            ((a.xor_val & b.xor_val & c.xor_val & d.xor_val) > 0))
     except AttributeError:
         return False

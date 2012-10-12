@@ -234,11 +234,11 @@ int quarto_herustic(QuartoBoard *board)
 	}
 	if(board->size==16){
 	    return 0;
-    }
-    int value = 0;
-    //update the value with different checks to arrive at a final return-value;
-    value += quarto_triples(board);
-	return value;
+	}
+	int value = 0;
+	//update the value with different checks to arrive at a final return-value;
+	value -= quarto_triple(board);
+	return value*10;
 }
 
 QuartoPiece create_piece_from_int(unsigned char val)
@@ -267,7 +267,7 @@ int piece_equal(QuartoPiece *a, QuartoPiece *b)
 
 int quarto_triple(QuartoBoard *board)
 {
-    int numTrips = 0;
+	int numTrips = 0;
 	for(int i = 0; i < 4; i++){
 		//Horizontal
 		if(pieces_triple(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
@@ -300,7 +300,7 @@ int pieces_triple(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d
 	}else if(is_valid_piece(a) && !is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
 		return ((a->piece & c->piece & d->piece) > 0) || ((a->xor & c->xor & d->xor) > 0);
 	}else if(!is_valid_piece(a) && is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
-		return ((b->piece & c->piece & d->piece) > 0) || (b->xor & c->xor & d->xor) > 0);
+		return ((b->piece & c->piece & d->piece) > 0) || ((b->xor & c->xor & d->xor) > 0);
 	}else{
 		return 0;
 	}

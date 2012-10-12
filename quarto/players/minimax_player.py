@@ -43,6 +43,10 @@ class MinimaxPlayer(NovicePlayer):
             #return super(MinimaxPlayer, self).get_placement(board, piece, pieces)
             return NovicePlayer.get_placement(self, board, piece, pieces)
         else:
-            pos, next = minimax(piece.val, board.get_board(), self.plys)
-            self.placePiece = Piece(val=next) if 0 <= next < 16 else None
-            return pos
+            won, pos = NovicePlayer.has_winning_pos(self, board, piece)
+            if won:
+                return pos
+            else:
+                pos, next = minimax(piece.val, board.get_board(), self.plys)
+                self.placePiece = Piece(val=next) if 0 <= next < 16 else None
+                return pos
