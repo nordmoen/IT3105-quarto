@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+from time import time
 from game import Game
 
 def main(player1, player2, num_rounds, simulate=False):
     game = Game(player1, player2)
     res = {player1: 0, player2: 0}
+    progress = 0
     for i in range(num_rounds):
         winner, board, win_pos, last_placed_pos = game.play()
         player1.reset()
@@ -14,6 +16,9 @@ def main(player1, player2, num_rounds, simulate=False):
         if not simulate:
             print_game_stats(player1, player2, winner, board, win_pos, last_placed_pos)
         game = Game(player2, player1)
+        progress = int((float(i + 1) / num_rounds)*100)
+        if progress % 10 == 0:
+            print '{}% complete.'.format(progress)
     if simulate:
         print 'Game statistics:'
         print 'Total games played: {}'.format(num_rounds)

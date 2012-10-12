@@ -44,7 +44,8 @@ class MinimaxPlayer(NovicePlayer):
         else:
             won, pos = NovicePlayer.has_winning_pos(self, board, piece)
             if won:
-                self.placePiece = None
+                self.placePiece = None #Done because games ask for a valid pices even if
+                #this was a victory
                 return pos
             pos, next = minimax(piece.val, board.get_board(), self.plys)
             self.placePiece = Piece(val=next) if 0 <= next < 16 else None
