@@ -24,7 +24,7 @@ class ServerListener(threading.Thread):
     def run(self):
         self.log.debug('Creating socket')
         self.socket = socket.socket() #Default ipv4 and TCP
-        self.log.debug('Binding to address %s:%i', self.addr, self.port)
+        self.log.info('Binding to address %s:%i', self.addr, self.port)
         try:
             self.socket.bind((self.addr, self.port))
         except:
@@ -44,7 +44,7 @@ class ServerListener(threading.Thread):
                 self.socket.close()
             except:
                 self.log.exception('Could not close socket')
-        self.log.debug('Shuting down listener')
+        self.log.info('Shuting down listener')
 
 
     def shutdown(self):

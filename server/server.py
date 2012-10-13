@@ -68,10 +68,10 @@ class Server(object):
             g = game.Game(p2, p1)
         self.log.info('Played %i rounds', num_rounds)
         self.log.info('Results:')
-        self.log.info('\t Player 1 won %i times(%i%), lost %i times(%i%)',
-                self.wins[p1], int((float(self.wins[p1])/num_rounds)*100),
+        self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)',
+                self.wins[p1], int((float(self.wins[p1])/num_rounds)*100), str(p1),
                 self.loses[p1], int((float(self.loses[p1])/num_rounds)*100))
-        self.log.info('\t Player 2 won %i times(%i%), lost %i times(%i%)',
+        self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)', str(p2),
                 self.wins[p2], int((float(self.wins[p2])/num_rounds)*100),
                 self.loses[p2], int((float(self.loses[p2])/num_rounds)*100))
         self.log.info('\t Ties: %i(%i%)', self.ties[p1],
