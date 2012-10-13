@@ -38,7 +38,7 @@ class Server(object):
                 self.ties[player] = 0
                 self.loses[player] = 0
 
-        def play_game(self, num_rounds):
+        def play_game(self, num_rounds=1):
             self.listener.start()
             while len(self.players) < 2:
                 self.log.info('Waiting for two players to connect')
