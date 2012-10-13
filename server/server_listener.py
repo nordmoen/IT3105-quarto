@@ -10,7 +10,7 @@ class ServerListener(threading.Thread):
     to a list of players which the server can use to start games'''
 
     def __init__(self, player_list, bind_addr, port, log = None):
-        super.__init__(self)
+        threading.Thread.__init__(self)
         self.p_list = player_list
         self.listen = True
         self.socket = None

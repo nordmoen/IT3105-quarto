@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import threading
-from ..quarto import game
+from quarto import game
 
 class ServerThread(threading.Thread):
     '''A class which will simulate a game between two players
@@ -9,7 +9,7 @@ class ServerThread(threading.Thread):
     playing at the same time'''
 
     def __init__(self, player1, player2):
-        super.__init__(self)
+        threading.Thread.__init__(self)
         self.player1 = player1
         self.player2 = player2
 
