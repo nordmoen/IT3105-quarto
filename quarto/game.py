@@ -21,7 +21,8 @@ class Game:
             try:
                 board.place(placePiece, *placePos)
             except PlaceTakenError:
-                raise PlaceTakenError(placePos, '1' if nextPlayer==self.p1 else '2', board)
+                raise PlaceTakenError(placePos, '1' if nextPlayer==self.p1 else
+                        '2', board)
             if pieces:
                 placePiece = nextPlayer.get_piece(board, pieces.values())
                 del pieces[placePiece.val]

@@ -7,7 +7,7 @@ class Piece:
                 self.val = val
             else:
                 raise ValueError('Value is outside range [0, 15]. Value is {value}'.format(value=val))
-        else:                
+        else:
             self.val = 0
             if dark:
                 self.val += 8
@@ -24,7 +24,7 @@ class Piece:
             return self.val & other.val > 0 or self.xor_val & other.xor_val > 0
         except AttributeError:
             return False
-    
+
     def __nonzero__(self):
         return True
 
@@ -52,7 +52,7 @@ class Piece:
 
 def check_four(a,b,c,d):
     try:
-        return (((a.val & b.val & c.val & d.val) > 0) or 
+        return (((a.val & b.val & c.val & d.val) > 0) or
             ((a.xor_val & b.xor_val & c.xor_val & d.xor_val) > 0))
     except AttributeError:
         return False
