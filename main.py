@@ -11,6 +11,9 @@ def play_quarto(args):
     p2 = create_player(args.player2)
     quarto.main(p1, p2, args.rounds, args.simulate)
 
+def start_network_player(args):
+    print args
+
 def start_server(args):
     logging.basicConfig(level=getattr(logging, args.log))
     serv = server.Server(args.addr, args.port)
@@ -29,7 +32,7 @@ def create_player(args):
             if len(args) > 2:
                 when_to_change = int(args[2])
             else:
-                when_to_change = 6
+                when_to_change = 2
             return minimax_player.MinimaxPlayer(difficulty, when_to_change)
         except IndexError:
             print 'No difficulty selected for player!'
@@ -69,8 +72,20 @@ def main():
     server_mode.add_argument('--rounds', default=1, type=int,
             help='Number of rounds to play if "--game" is selected')
     server_mode.add_argument('--log', default='INFO', choices=['DEBUG',
-        'INFO', 'WARNING', 'CRITICAL'], help='Select the level at which the logging should emit messages, everything below the selected level will also be printed')
+        'INFO', 'WARNING', 'CRITICAL'], help='Select the level at which the' +
+        ' logging should emit messages, everything below the selected level will also be printed')
     server_mode.set_defaults(func=start_server)
+
+    network_mode = mode_parsers.add_parser('network', help='Start a network player to connect to a server')
+    network_mode.add_argument('type', nargs='+', default='novice', choices=['random',
+        'novice', 'minimax', 'human'].extend(range(10)),
+        help='Select the type of the network player,' +
+        ' if minimax is chosen an additional argument is needed')
+    network_mode.add_argument('-a', '--addr', default='localhost',
+            help='Select the address which the server should bind to')
+    network_mode.add_argument('-p', '--port', default=49455, type=int,
+            help='Select the port to start the server on')
+    network_mode.set_defaults(func=start_network_player)
 
     args = parser.parse_args()
     args.func(args)
