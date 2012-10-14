@@ -31,6 +31,12 @@ class Server(object):
         self.ties = {}
         self.loses = {}
 
+    def shutdown(self):
+        if self.listener:
+            self.listener.shutdown()
+        for player in self.players:
+            player.error()
+
     def prepare_players(self):
         for player in self.players:
             self.log.debug('Preparing: %s', player)
@@ -41,7 +47,8 @@ class Server(object):
     def play_game(self, num_rounds=1):
         self.listener.start()
         while len(self.players) < 2:
-            self.log.info('Waiting for two players to connect')
+            self.log.info('Waiting for %i player(s) to connect',
+                    2-len(self.players))
             time.sleep(2)
             if not self.listener.is_alive():
                 self.log.critical('Server listener died! Shutingdown')

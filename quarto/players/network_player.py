@@ -3,7 +3,8 @@ import socket
 import logging
 
 from quarto.board import Board
-from server.constants import *
+from quarto.piece import Piece
+from server import constants as const
 
 class NetworkPlayer(object):
     '''Network player to work together with our quarto game implementation.'''
@@ -16,7 +17,7 @@ class NetworkPlayer(object):
                 self.__class__.__name__, conn, addr))
         self.socket = conn
         self.addr = addr
-        self.log.debug('Created network player with conn: %s and addr %s',
+        self.log.debug('Created network player with conn: %s and addr: %s',
                 self.socket, self.addr)
 
 
@@ -32,7 +33,7 @@ class NetworkPlayer(object):
                     'to play with')
             return
         self.player = player
-        self.log.debug('Connecting to server')
+        self.log.debug('Connecting to server: %s:%i', self.addr, port)
         try:
             self.socket = socket.create_connection((self.addr,
                 port), timeout if timeout else socket.getdefaulttimeout())
@@ -42,9 +43,9 @@ class NetworkPlayer(object):
             return
         for i in range(2):
             self.log.debug('Trying to say hello to server, round %i', i)
-            self.socket.sendall(HELLO)
+            self.socket.sendall(const.HELLO)
             respons = self.socket.recv(128)
-            if respons == HELLO:
+            if respons == const.HELLO:
                 self.log.debug('Server said hello back!')
                 break
         else:
@@ -55,33 +56,80 @@ class NetworkPlayer(object):
     def play(self):
         '''Method used to start this player playing games with the server.
         This method is used when the user starts this class from the command-line'''
-        if not self.player:
+        if not self.player or not self.socket:
             self.log.critical('Can not call method play without first calling' +
-                    ' connect')
+                    ' connect successfully')
             return
-        pass
+        while True:
+            move = self.socket.recv(128)
+            if move == const.NEW_GAME:
+                self.log.debug('Got new_game message from server reseting player')
+                self.player.reset()
+            elif move == const.ERROR:
+                self.log.debug('Got error message from server quiting')
+                break
+            elif move == const.GET_PIECE:
+                self.log.debug('Got get_piece message from server')
+                message = self.socket.recv(4096)
+                self.log.debug('Got message from server: %s', message)
+                self.log.debug('Got board: %s', message[0])
+                self.log.debug('Got these pieces from server: %s', message[1])
+                ret = self.player.get_piece(b, map(lambda x: Piece(val=x), eval(pieces)))
+                self.log.debug('Sending %s(%r) to server', ret, ret)
+                self.socket.sendall(repr(ret.val))
+            elif move == const.GET_PLACEMENT:
+                self.log.debug('Got get_piece message from server')
+                board = eval(self.socket.recv(4096))
+                self.log.debug('Got board: %s', board)
+                piece = eval(self.socket.recv(128))
+                p = Piece(val=piece)
+                self.log.debug('Got piece %s(%r)', p, p)
+                pieces = eval(self.socket.recv(4096))
+                self.log.debug('Got these pieces from server: %s', pieces)
+                placement = self.player.get_placement(board, p, map(lambda x: Piece(val=x),
+                    eval(pieces)))
+                self.log.debug('Sending %s as placement to server', placement)
+                self.socket.sendall(repr(placement))
+
 
     def new_game(self):
         '''Method used by the server to indicate that a new game is about to start
         this method will then inform the remote player'''
-        pass
+        self.log.debug('Sending new game message to remote player')
+        self.socket.sendall(const.NEW_GAME)
 
     def get_piece(self, board, pieces):
         '''Method used by the server to indicate that it want the next piece from
         the remote player, this method will then contact the remote server and
         return the appropriate value'''
-        pass
+        self.log.debug('Sending get_piece message to remote player')
+        self.socket.sendall(const.GET_PIECE)
+        self.socket.sendall(repr(board.get_board()))
+        self.socket.sendall(repr(map(lambda x: x.val, pieces)))
+        piece = self.socket.recv(128)
+        p = Piece(val=int(piece))
+        self.log.debug('Got piece: %s(%r) from player:%s', p, p, piece)
+        return p
+
 
     def get_placement(self, board, piece, pieces):
         '''Method used by the server to retrieve the next position that the
         remote player want to place the given piece in, this method will contact
         the remote player and relay the necessary information'''
-        pass
+        self.log.debug('Sending get_placement message to remote player')
+        self.socket.sendall(const.GET_PLACEMENT)
+        self.socket.sendall(repr(board.get_board()))
+        self.socket.sendall(repr(piece.val))
+        self.socket.sendall(repr(map(lambda x: x.val, pieces)))
+        placement = eval(self.socket.recv(128))
+        self.log.debug('Got placement: %r', placement)
+        return placement
 
-    def error(self):
+    def error(self, error=''):
         '''Method called by the server to tell a remote player that an error
         occurred and that it can no longer send or receive more messages'''
-        pass
+        self.log.warning('Sending error message to player')
+        self.socket.sendall(const.ERROR)
 
     def __str__(self):
         if self.player:

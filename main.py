@@ -23,10 +23,13 @@ def prepare_logging(log_level):
 def start_server(args):
     prepare_logging(args.log)
     serv = server.Server(args.addr, args.port)
-    if args.game:
-        serv.play_game(int(args.rounds))
-    elif args.continuous:
-        raise NotImplementedError('Continuous mode is not yet implemented for server')
+    try:
+        if args.game:
+            serv.play_game(int(args.rounds))
+        elif args.continuous:
+            raise NotImplementedError('Continuous mode is not yet implemented for server')
+    except KeyboardInterrupt:
+        serv.shutdown()
 
 def create_player(args):
     type = args[0]

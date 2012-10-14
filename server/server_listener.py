@@ -4,6 +4,7 @@ import threading
 import socket
 import logging
 from quarto.players import network_player
+import constants as const
 
 class ServerListener(threading.Thread):
     '''This class represent a thread which will be listening for
@@ -45,10 +46,13 @@ class ServerListener(threading.Thread):
                 self.log.exception('Got exception at socket accept')
                 raise
             self.log.debug('Got connection from address "%s"', addr)
-            self.log.debug('Creating new network player')
-            player = network_player.NetworkPlayer(conn, addr)
-            self.log.debug('Adding new player to the list')
-            self.p_list.append(player)
+            hello_msg = conn.recv(128)
+            if hello_msg == const.HELLO:
+                conn.sendall(const.HELLO)
+                self.log.debug('Creating new network player')
+                player = network_player.NetworkPlayer(conn, addr)
+                self.log.debug('Adding new player to the list')
+                self.p_list.append(player)
         if self.socket:
             try:
                 self.socket.close()
@@ -62,5 +66,6 @@ class ServerListener(threading.Thread):
         if self.socket:
             try:
                 self.socket.shutdown(socket.SHUT_RD)
+                self.socket.close()
             except:
                 self.log.exception('Could not shutdown socket')
