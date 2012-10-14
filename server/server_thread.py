@@ -14,8 +14,12 @@ class ServerThread(threading.Thread):
         self.player2 = player2
 
     def run(self):
-       game = game.Game(self.player1, self.player2)
-       self.stats = game.play()
+        game = game.Game(self.player1, self.player2)
+        try:
+            self.stats = game.play()
+        except:
+            self.player1.error()
+            self.player2.error()
 
     def get_stats(self):
         return self.stats

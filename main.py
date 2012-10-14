@@ -12,11 +12,21 @@ def play_quarto(args):
     quarto.main(p1, p2, args.rounds, args.simulate)
 
 def start_network_player(args):
-    print args
+    prepare_logging(args.log)
+    player = network_player.NetworkPlayer(None, args.addr)
+    player.connect(int(args.port), create_player(args.type), None)
+    player.play()
+
+def prepare_logging(log_level):
+    logging.basicConfig(level=getattr(logging, log_level.upper()))
 
 def start_server(args):
-    logging.basicConfig(level=getattr(logging, args.log))
+    prepare_logging(args.log)
     serv = server.Server(args.addr, args.port)
+    if args.game:
+        serv.play_game(int(args.rounds))
+    elif args.continuous:
+        raise NotImplementedError('Continuous mode is not yet implemented for server')
 
 def create_player(args):
     type = args[0]
@@ -43,6 +53,9 @@ def create_player(args):
 
 def main():
     parser = argparse.ArgumentParser(description='Start up a game of Quarto')
+    parser.add_argument('--log', default='info', choices=['debug',
+        'info', 'warning', 'critical'], help='Select the level at which the' +
+        ' logging should emit messages, everything below the selected level will also be printed')
     mode_parsers = parser.add_subparsers(title='Modes',
             description='Possible modes to start', help='Additional help')
     game_mode = mode_parsers.add_parser('game', help='Start a Quarto game')
@@ -71,9 +84,6 @@ def main():
             help='Start the server in game mode and wait for two players to connect and player Quarto')
     server_mode.add_argument('--rounds', default=1, type=int,
             help='Number of rounds to play if "--game" is selected')
-    server_mode.add_argument('--log', default='INFO', choices=['DEBUG',
-        'INFO', 'WARNING', 'CRITICAL'], help='Select the level at which the' +
-        ' logging should emit messages, everything below the selected level will also be printed')
     server_mode.set_defaults(func=start_server)
 
     network_mode = mode_parsers.add_parser('network', help='Start a network player to connect to a server')

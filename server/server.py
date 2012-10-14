@@ -21,7 +21,7 @@ class Server(object):
         if log:
             self.log = log
         else:
-            self.log = logging.getLogger('Server')
+            self.log = logging.getLogger(self.__class__.__name__)
         self.log.debug('Server starting')
         self.players = []
         self.log.debug('Creating server listener')
@@ -43,6 +43,9 @@ class Server(object):
         while len(self.players) < 2:
             self.log.info('Waiting for two players to connect')
             time.sleep(2)
+            if not self.listener.is_alive():
+                self.log.critical('Server listener died! Shutingdown')
+                return
         self.listener.shutdown() #We don't need this any more
         self.log.info('Players connected, starting game')
         self.prepare_players()
@@ -53,19 +56,25 @@ class Server(object):
             self.log.debug('Starting round %i', i + 1)
             p1.new_game()
             p2.new_game()
-            winningPlayer, board, victory, placePos = g.play()
-            if winningPlayer:
-                self.log.debug('Player %s won the game', winningPlayer)
-                self.log.debug('Board:\n %s', board)
-                self.wins[winningPlayer] += 1
-                loser = p1 if winningPlayer == p2 else p2
-                self.loses[loser] += 1
-            else:
-                self.log.debug('Players tied the game')
-                self.log.debug('Board:\n %s', board)
-                self.ties[p1] += 1
-                self.ties[p2] += 1
-            g = game.Game(p2, p1)
+            try:
+                winningPlayer, board, victory, placePos = g.play()
+                if winningPlayer:
+                    self.log.debug('Player %s won the game', winningPlayer)
+                    self.log.debug('Board:\n %s', board)
+                    self.wins[winningPlayer] += 1
+                    loser = p1 if winningPlayer == p2 else p2
+                    self.loses[loser] += 1
+                else:
+                    self.log.debug('Players tied the game')
+                    self.log.debug('Board:\n %s', board)
+                    self.ties[p1] += 1
+                    self.ties[p2] += 1
+                g = game.Game(p2, p1)
+            except:
+                self.log.exception('An error occured while trying to play')
+                for p in self.players:
+                    p.error()
+                return
         self.log.info('Played %i rounds', num_rounds)
         self.log.info('Results:')
         self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)',

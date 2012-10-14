@@ -3,6 +3,7 @@
 import threading
 import socket
 import logging
+from quarto.players import network_player
 
 class ServerListener(threading.Thread):
     '''This class represent a thread which will be listening for
@@ -19,7 +20,7 @@ class ServerListener(threading.Thread):
         if log:
             self.log = log
         else:
-            self.log = logging.getLogger('ServerListener')
+            self.log = logging.getLogger(self.__class__.__name__)
 
     def run(self):
         self.log.debug('Creating socket')
@@ -31,14 +32,23 @@ class ServerListener(threading.Thread):
             self.log.exception('Could not bind socket to address: %s:%i', self.addr, self.port)
             self.log.critical('Shuting down after socket error')
             return
+        try:
+            self.socket.listen(1)
+        except:
+            self.log.exception('Could not get socket to listen')
+            return
         while self.listen:
             self.log.debug('Waiting for connection')
-            conn, addr = self.socket.accept()
+            try:
+                conn, addr = self.socket.accept()
+            except:
+                self.log.exception('Got exception at socket accept')
+                raise
             self.log.debug('Got connection from address "%s"', addr)
             self.log.debug('Creating new network player')
-            #TODO:Create new network player here
+            player = network_player.NetworkPlayer(conn, addr)
             self.log.debug('Adding new player to the list')
-            #TODO: Add player to player list
+            self.p_list.append(player)
         if self.socket:
             try:
                 self.socket.close()
