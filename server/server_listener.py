@@ -44,7 +44,7 @@ class ServerListener(threading.Thread):
                 conn, addr = self.socket.accept()
             except:
                 self.log.exception('Got exception at socket accept')
-                raise
+                break
             self.log.debug('Got connection from address "%s"', addr)
             hello_msg = conn.recv(128)
             if hello_msg == const.HELLO:
@@ -54,10 +54,7 @@ class ServerListener(threading.Thread):
                 self.log.debug('Adding new player to the list')
                 self.p_list.append(player)
         if self.socket:
-            try:
-                self.socket.close()
-            except:
-                self.log.exception('Could not close socket')
+            self.shutdown()
         self.log.info('Shuting down listener')
 
 
