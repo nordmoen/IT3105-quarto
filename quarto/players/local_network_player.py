@@ -66,7 +66,7 @@ class LocalNetworkPlayer(object):
                 pieces = {i:Piece(val=i) for i in range(16)}
                 self.player.reset()
             elif move[0] == const.ERROR:
-                self.log.debug('Got error message from server quiting')
+                self.log.warning('Got error message from server quiting')
                 break
             elif move[0] == const.GET_PIECE:
                 self.log.debug('Got get_piece message from server: %s', move)

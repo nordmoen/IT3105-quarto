@@ -33,9 +33,14 @@ class Server(object):
 
     def shutdown(self):
         if self.listener.listen:
+            self.log.info('Shuting down server listener')
             self.listener.shutdown()
+        if self.listener.is_alive():
+            self.log.warning('Listener thread is stile alive')
         for player in self.players:
-            player.shutdown()
+            if player.is_alive:
+                self.log.info('Shuting down player: %s', player)
+                player.shutdown()
 
     def prepare_players(self):
         for player in self.players:
@@ -80,10 +85,15 @@ class Server(object):
                     self.ties[p1] += 1
                     self.ties[p2] += 1
                 p1, p2 = p2, p1
+                progress = int((float(i + 1) / num_rounds)*100)
+                if progress % 10 == 0:
+                    self.log.info('%s%% complete.', progress)
+                time.sleep(1)
             except:
                 self.log.exception('An error occured while trying to play')
                 for p in self.players:
                     p.error()
+                self.shutdown()
                 return
         self.shutdown()
         self.log.info('Played %i rounds', num_rounds)
