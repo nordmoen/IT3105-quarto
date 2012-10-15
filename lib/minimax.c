@@ -63,13 +63,13 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					//We have reached the bottom of the recursion
 					//and we need only evaluate the possible placements
 					//of the piece that we have gotten
-					int quarto_value = quarto_herustic(&newB);
+					int quarto_value = quarto_herustic(&newB)*(-1);
 					if(quarto_value < local_beta){
 						local_beta = quarto_value;
 						res->x = j;
 						res->y = i;
 					}
-					if(local_beta <= alpha) return local_beta*(-1);
+					if(local_beta <= alpha) return local_beta;
 				}else{
 					int pieces_left[16]; //Array with 0 or 1 to indicate if the pieces
 					//in that index is available
@@ -95,14 +95,14 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 							//will always chose the path which leads
 							//to that alpha value and there is no use
 							//in recursing any more
-							if(local_beta <= alpha) return local_beta*(-1);
+							if(local_beta <= alpha) return local_beta;
 						}
 					}
 				}
 			}
 		}
 	}
-	return local_beta*(-1);
+	return local_beta;
 }
 
 int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
@@ -237,8 +237,8 @@ int quarto_herustic(QuartoBoard *board)
 	}
 	int value = 0;
 	//update the value with different checks to arrive at a final return-value;
-	value -= quarto_triple(board);
-	return value*10;
+	value -= quarto_triple(board) * 5;
+	return value;
 }
 
 QuartoPiece create_piece_from_int(unsigned char val)

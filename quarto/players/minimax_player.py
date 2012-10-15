@@ -28,7 +28,7 @@ class MinimaxPlayer(NovicePlayer):
     def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
         can be copied to the other players'''
-        if self.change > 0:
+        if self.change > 16-len(pieces):
             #return super(MinimaxPlayer, self).get_piece(board, pieces)
             return NovicePlayer.get_piece(self, board, pieces)
         if self.placePiece:
@@ -37,15 +37,14 @@ class MinimaxPlayer(NovicePlayer):
             return NovicePlayer.get_piece(self, board, pieces)
 
     def get_placement(self, board, piece, pieces):
-        if self.change > 0:
-            self.change -= 2
+        if self.change > 16-len(pieces):
             #return super(MinimaxPlayer, self).get_placement(board, piece, pieces)
             return NovicePlayer.get_placement(self, board, piece, pieces)
         else:
             won, pos = NovicePlayer.has_winning_pos(self, board, piece)
             if won:
                 self.placePiece = None #Done because games ask for a valid pices even if
-                #this was a victory
+                                        #this was a victory
                 return pos
             pos, next = minimax(piece.val, board.get_board(), self.plys)
             self.placePiece = Piece(val=next) if 0 <= next < 16 else None
