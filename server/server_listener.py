@@ -60,7 +60,7 @@ class ServerListener(threading.Thread):
         self.listen = False
         if self.socket:
             try:
-                self.socket.shutdown(socket.SHUT_WR)
+                self.socket.shutdown(socket.SHUT_RDWR)
             except:
                 self.log.debug('Shutdown threw error while shuting down')
             try:
