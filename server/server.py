@@ -88,11 +88,11 @@ class Server(object):
         self.shutdown()
         self.log.info('Played %i rounds', num_rounds)
         self.log.info('Results:')
-        self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)',
+        self.log.info('\t Player %s won %s times(%s%%), lost %s times(%s%%)',
                 self.wins[p1], int((float(self.wins[p1])/num_rounds)*100), str(p1),
                 self.loses[p1], int((float(self.loses[p1])/num_rounds)*100))
-        self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)', str(p2),
+        self.log.info('\t Player %s won %s times(%s%%), lost %s times(%s%%)', str(p2),
                 self.wins[p2], int((float(self.wins[p2])/num_rounds)*100),
                 self.loses[p2], int((float(self.loses[p2])/num_rounds)*100))
-        self.log.info('\t Ties: %i(%i%)', self.ties[p1],
+        self.log.info('\t Ties: %s(%s%%)', self.ties[p1],
                 int((float(self.ties[p2])/num_rounds)*100))

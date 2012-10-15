@@ -58,6 +58,8 @@ class LocalNetworkPlayer(object):
         pieces = None
         while True:
             move = self.socket.recv(4096).split('\n')
+            self.log.debug('Board:\n%s', board)
+            self.log.debug('Pieces: %s', pieces)
             if move[0] == const.NEW_GAME:
                 self.log.debug('Got new_game message from server reseting player')
                 board = Board()
@@ -72,8 +74,7 @@ class LocalNetworkPlayer(object):
                 self.log.debug('Sending piece: %s(%r) to server', next_piece, next_piece)
                 self.socket.sendall(repr(next_piece.val))
             elif move[0] == const.GET_PLACEMENT:
-                self.log.debug('Got get_piece message from server: %s', move)
-                del pieces[int(move[1])]
+                self.log.debug('Got get_placement message from server: %s', move)
                 pos = self.player.get_placement(board, Piece(val=int(move[1])), pieces)
                 self.log.debug('Sending pos %s to server', pos)
                 self.socket.sendall(repr(self.translate_pos_int(pos)))

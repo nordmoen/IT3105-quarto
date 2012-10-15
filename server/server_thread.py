@@ -29,6 +29,7 @@ class ServerThread(threading.Thread):
         while board.placed < 16 and not victory:
             placePos = nextPlayer.get_placement(board, placePiece, pieces.values())
             board.place(placePiece, *placePos)
+            nextPlayer.piece_placed(placePiece, placePos)
             other.piece_placed(placePiece, placePos)
             if pieces:
                 placePiece = nextPlayer.get_piece(board, pieces.values())
@@ -41,7 +42,6 @@ class ServerThread(threading.Thread):
                 nextPlayer = self.p1
                 other = self.p2
         self.board = board
-        print board
         if victory:
             if nextPlayer == self.p1:
                 self.winner = self.p2
