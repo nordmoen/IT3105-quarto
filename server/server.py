@@ -58,13 +58,16 @@ class Server(object):
         self.prepare_players()
         p1 = self.players[0]
         p2 = self.players[1]
-        g = game.Game(p1, p2)
         for i in range(num_rounds):
+            if not p1.is_alive or not p2.is_alive:
+                self.log.critical('One or both of the players has closed their' +
+                        ' connection to the game, aborting round. %s, %s', p1, p2)
+                break
             self.log.debug('Starting round %i', i + 1)
-            p1.new_game()
-            p2.new_game()
             try:
-                winningPlayer, board, victory, placePos = g.play()
+                game = server_thread.ServerThread(p1, p2)
+                game.run()
+                winningPlayer = game.get_winner()
                 if winningPlayer:
                     self.log.debug('Player %s won the game', winningPlayer)
                     self.log.debug('Board:\n %s', board)
@@ -76,7 +79,7 @@ class Server(object):
                     self.log.debug('Board:\n %s', board)
                     self.ties[p1] += 1
                     self.ties[p2] += 1
-                g = game.Game(p2, p1)
+                p1, p2 = p2, p1
             except:
                 self.log.exception('An error occured while trying to play')
                 for p in self.players:

@@ -4,12 +4,8 @@ from piece import check_four
 class Board:
     '''A Quarto board implementation'''
     def __init__(self, board=None):
-        if not board:
-            self.board = [[None, None, None, None] for i in range(4)]
-            self.placed = 0
-        else:
-            self.board = board
-            self.placed = sum(sum(map(lambda x: 1 if x else 0, row)) for row in board)
+        self.board = [[None, None, None, None] for i in range(4)]
+        self.placed = 0
 
     def place(self, piece, x, y):
         if self.board[y][x]:

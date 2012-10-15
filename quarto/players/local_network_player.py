@@ -2,6 +2,8 @@
 
 import logging
 import socket
+from quarto.piece import Piece
+from quarto.board import Board
 from server import constants as const
 
 class LocalNetworkPlayer(object):
@@ -52,36 +54,43 @@ class LocalNetworkPlayer(object):
             self.log.critical('Can not call method play without first calling' +
                     ' connect successfully')
             return
+        board = None
+        pieces = None
         while True:
-            move = self.socket.recv(128)
+            move = self.socket.recv(4096).split('\n')
             if move == const.NEW_GAME:
                 self.log.debug('Got new_game message from server reseting player')
+                board = Board()
+                pieces = {i:Piece(val=i) for i in range(16)}
                 self.player.reset()
-            elif move == const.ERROR:
+            elif move[0] == const.ERROR:
                 self.log.debug('Got error message from server quiting')
                 break
-            elif move == const.GET_PIECE:
-                self.log.debug('Got get_piece message from server')
-                message = self.socket.recv(4096)
-                self.log.debug('Got message from server: %s', message)
-                self.log.debug('Got board: %s', message[0])
-                self.log.debug('Got these pieces from server: %s', message[1])
-                ret = self.player.get_piece(b, map(lambda x: Piece(val=x), eval(pieces)))
-                self.log.debug('Sending %s(%r) to server', ret, ret)
-                self.socket.sendall(repr(ret.val))
-            elif move == const.GET_PLACEMENT:
-                self.log.debug('Got get_piece message from server')
-                board = eval(self.socket.recv(4096))
-                self.log.debug('Got board: %s', board)
-                piece = eval(self.socket.recv(128))
-                p = Piece(val=piece)
-                self.log.debug('Got piece %s(%r)', p, p)
-                pieces = eval(self.socket.recv(4096))
-                self.log.debug('Got these pieces from server: %s', pieces)
-                placement = self.player.get_placement(board, p, map(lambda x: Piece(val=x),
-                    eval(pieces)))
-                self.log.debug('Sending %s as placement to server', placement)
-                self.socket.sendall(repr(placement))
+            elif move[0] == const.GET_PIECE:
+                self.log.debug('Got get_piece message from server: %s', move)
+                next_piece = self.player.get_piece(board, pieces)
+                self.log.debug('Sending piece: %s(%r) to server', next_piece)
+                self.socket.sendall(next_piece.val)
+            elif move[0] == const.GET_PLACEMENT:
+                self.log.debug('Got get_piece message from server: %s', move)
+                del pieces[int(move[1])]
+                pos = self.player.get_placement(board, Piece(val=int(move[1])), pieces)
+                self.log.debug('Sending pos %s to server', pos)
+                self.socket.sendall(repr(self.translate_pos_int(pos)))
+            elif move[0] == const.PIECE_PLACED:
+                self.log.debug('Got place_piece message from server: %s', move)
+                board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
+            elif move[0] == const.SHUTDOWN:
+                self.log.debug('Got shutdown message')
+                break
+        self.__shutdown()
+
+    def __shutdown(self):
+        self.log.debug('Shuting down socket')
+        try:
+            self.socket.close()
+        except:
+            self.log.exception('Got exception trying to close socket')
 
     def __str__(self):
         return 'LocalNetwork Player: {}, Connection: {}:{}'.format(self.player,

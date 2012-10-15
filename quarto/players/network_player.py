@@ -19,6 +19,7 @@ class NetworkPlayer(object):
         self.addr = addr
         self.log.debug('Created network player with conn: %s and addr: %s',
                 self.socket, self.addr)
+        self.is_alive = True
 
     def new_game(self):
         '''Method used by the server to indicate that a new game is about to start
@@ -31,25 +32,33 @@ class NetworkPlayer(object):
         the remote player, this method will then contact the remote server and
         return the appropriate value'''
         self.log.debug('Sending get_piece message to remote player')
-        self.socket.sendall(const.GET_PIECE)
-        self.socket.sendall(repr(board.get_board()))
-        self.socket.sendall(repr(map(lambda x: x.val, pieces)))
+        sending_pieces = map(lambda x: x.val, pieces)
+        self.socket.sendall(const.GET_PIECE + '\n' + repr(sending_pieces))
         piece = self.socket.recv(128)
         p = Piece(val=int(piece))
         self.log.debug('Got piece: %s(%r) from player:%s', p, p, piece)
         return p
 
+    def translate_pos(pos):
+        '''Translate a position of the format (x, y) to the format
+        [0, 1, 2, 3]
+        [4, 5, 6, 7]
+        [8, 9, 10, 11]
+        [12, 13, 14, 15]'''
+        return pos[1]*4 + pos[0]
+
+    def piece_placed(self, piece, pos):
+        self.log.debug('Sending piece_placed message to remote player')
+        self.socket.sendall(const.PIECE_PLACED + '\n' + repr(piece.val) + '\n' +
+                repr(self.translate_pos(pos)))
 
     def get_placement(self, board, piece, pieces):
         '''Method used by the server to retrieve the next position that the
         remote player want to place the given piece in, this method will contact
         the remote player and relay the necessary information'''
         self.log.debug('Sending get_placement message to remote player')
-        self.socket.sendall(const.GET_PLACEMENT)
-        self.socket.sendall(repr(board.get_board()))
-        self.socket.sendall(repr(piece.val))
-        self.socket.sendall(repr(map(lambda x: x.val, pieces)))
-        placement = eval(self.socket.recv(128))
+        self.socket.sendall(const.GET_PLACEMENT + '\n' + repr(piece.val))
+        placement = self.socket.recv(128)
         self.log.debug('Got placement: %r', placement)
         return placement
 
@@ -66,6 +75,7 @@ class NetworkPlayer(object):
         self.__shutdown()
 
     def __shutdown(self):
+        self.is_alive = False
         self.log.debug('Shutingdown socket')
         try:
             self.socket.close()
@@ -75,4 +85,6 @@ class NetworkPlayer(object):
 
 
     def __str__(self):
-        return 'Network player, Conn{}, Addr:{}'.format(self.socket, self.addr)
+        alive_msg = 'Alive' if self.is_alive else 'Dead'
+        return 'Network player({}), Conn{}, Addr:{}'.format(alive_msg,
+                self.socket, self.addr)
