@@ -35,7 +35,7 @@ class Server(object):
         if self.listener:
             self.listener.shutdown()
         for player in self.players:
-            player.error()
+            player.shutdown()
 
     def prepare_players(self):
         for player in self.players:
@@ -82,6 +82,7 @@ class Server(object):
                 for p in self.players:
                     p.error()
                 return
+        self.shutdown()
         self.log.info('Played %i rounds', num_rounds)
         self.log.info('Results:')
         self.log.info('\t Player %s won %i times(%i%), lost %i times(%i%)',

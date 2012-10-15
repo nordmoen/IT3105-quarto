@@ -58,6 +58,21 @@ class NetworkPlayer(object):
         occurred and that it can no longer send or receive more messages'''
         self.log.warning('Sending error message to player')
         self.socket.sendall(const.ERROR)
+        self.__shutdown()
+
+    def shutdown(self):
+        self.log.debug('Sending shutdown message')
+        self.socket.sendall(const.SHUTDOWN)
+        self.__shutdown()
+
+    def __shutdown(self):
+        self.log.debug('Shutingdown socket')
+        try:
+            self.socket.close()
+        except:
+            self.log.exception('Exception happened while trying to close socket')
+
+
 
     def __str__(self):
         return 'Network player, Conn{}, Addr:{}'.format(self.socket, self.addr)

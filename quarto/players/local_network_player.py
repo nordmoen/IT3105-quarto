@@ -12,6 +12,7 @@ class LocalNetworkPlayer(object):
         self.addr = addr
         self.port = port
         self.player = player
+        self.socket = None
         if not log:
             self.log = logging.getLogger(self.__class__.__name__)
         else:

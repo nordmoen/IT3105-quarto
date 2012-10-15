@@ -3,7 +3,8 @@
 import argparse
 import logging
 from quarto import quarto
-from quarto.players import random_player, human_player, novice_player, minimax_player, network_player
+from quarto.players import random_player, human_player, novice_player, minimax_player
+from quarto.players import network_player, local_network_player
 from server import server
 
 def play_quarto(args):
@@ -13,8 +14,8 @@ def play_quarto(args):
 
 def start_network_player(args):
     prepare_logging(args.log)
-    player = network_player.NetworkPlayer(None, args.addr)
-    player.connect(int(args.port), create_player(args.type), None)
+    player = local_network_player.LocalNetworkPlayer(args.addr, args.port, create_player(args.type))
+    player.connect()
     player.play()
 
 def prepare_logging(log_level):
