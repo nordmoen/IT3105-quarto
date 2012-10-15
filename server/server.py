@@ -67,7 +67,7 @@ class Server(object):
             try:
                 game = server_thread.ServerThread(p1, p2)
                 game.run()
-                winningPlayer = game.get_winner()
+                winningPlayer, board = game.get_winner()
                 if winningPlayer:
                     self.log.debug('Player %s won the game', winningPlayer)
                     self.log.debug('Board:\n %s', board)

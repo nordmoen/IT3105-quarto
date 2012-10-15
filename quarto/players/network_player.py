@@ -36,16 +36,24 @@ class NetworkPlayer(object):
         self.socket.sendall(const.GET_PIECE + '\n' + repr(sending_pieces))
         piece = self.socket.recv(128)
         p = Piece(val=int(piece))
-        self.log.debug('Got piece: %s(%r) from player:%s', p, p, piece)
+        self.log.debug('Got piece: %s(%r) from player', p, p)
         return p
 
-    def translate_pos(pos):
+    def translate_pos(self, pos):
         '''Translate a position of the format (x, y) to the format
         [0, 1, 2, 3]
         [4, 5, 6, 7]
         [8, 9, 10, 11]
         [12, 13, 14, 15]'''
         return pos[1]*4 + pos[0]
+
+    def translate_int_pos(self, i):
+        '''Translate from int:
+        [0, 1, 2, 3] ...
+        to (x, y)'''
+        x = i % 4
+        y = (i-x) / 4
+        return (x, y)
 
     def piece_placed(self, piece, pos):
         self.log.debug('Sending piece_placed message to remote player')
@@ -60,7 +68,7 @@ class NetworkPlayer(object):
         self.socket.sendall(const.GET_PLACEMENT + '\n' + repr(piece.val))
         placement = self.socket.recv(128)
         self.log.debug('Got placement: %r', placement)
-        return placement
+        return self.translate_int_pos(int(placement))
 
     def error(self, error=''):
         '''Method called by the server to tell a remote player that an error

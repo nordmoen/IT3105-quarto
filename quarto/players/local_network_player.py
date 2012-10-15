@@ -58,7 +58,7 @@ class LocalNetworkPlayer(object):
         pieces = None
         while True:
             move = self.socket.recv(4096).split('\n')
-            if move == const.NEW_GAME:
+            if move[0] == const.NEW_GAME:
                 self.log.debug('Got new_game message from server reseting player')
                 board = Board()
                 pieces = {i:Piece(val=i) for i in range(16)}
@@ -68,9 +68,9 @@ class LocalNetworkPlayer(object):
                 break
             elif move[0] == const.GET_PIECE:
                 self.log.debug('Got get_piece message from server: %s', move)
-                next_piece = self.player.get_piece(board, pieces)
-                self.log.debug('Sending piece: %s(%r) to server', next_piece)
-                self.socket.sendall(next_piece.val)
+                next_piece = self.player.get_piece(board, pieces.values())
+                self.log.debug('Sending piece: %s(%r) to server', next_piece, next_piece)
+                self.socket.sendall(repr(next_piece.val))
             elif move[0] == const.GET_PLACEMENT:
                 self.log.debug('Got get_piece message from server: %s', move)
                 del pieces[int(move[1])]
@@ -78,12 +78,24 @@ class LocalNetworkPlayer(object):
                 self.log.debug('Sending pos %s to server', pos)
                 self.socket.sendall(repr(self.translate_pos_int(pos)))
             elif move[0] == const.PIECE_PLACED:
-                self.log.debug('Got place_piece message from server: %s', move)
+                self.log.debug('Got placed_piece message from server: %s', move)
+                del pieces[int(move[1])]
                 board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
             elif move[0] == const.SHUTDOWN:
                 self.log.debug('Got shutdown message')
                 break
         self.__shutdown()
+
+    def translate_int_pos(self, i):
+        '''Translate from int:
+        [0, 1, 2, 3] ...
+        to (x, y)'''
+        x = i % 4
+        y = (i-x) / 4
+        return (x, y)
+
+    def translate_pos_int(self, pos):
+        return pos[1]*4 + pos[0]
 
     def __shutdown(self):
         self.log.debug('Shuting down socket')

@@ -2,7 +2,7 @@
 
 import threading
 from quarto.piece import Piece
-from quarto.board import Board
+from quarto.board import Board, PlaceTakenError
 
 class ServerThread(threading.Thread):
     '''A class which will simulate a game between two players
@@ -14,6 +14,7 @@ class ServerThread(threading.Thread):
         self.p1 = player1
         self.p2 = player2
         self.winner = None
+        self.board = None
 
     def run(self):
         self.p1.new_game()
@@ -25,14 +26,9 @@ class ServerThread(threading.Thread):
         nextPlayer = self.p2
         other = self.p1
         victory = None
-        while board.size < 16 and not victory:
+        while board.placed < 16 and not victory:
             placePos = nextPlayer.get_placement(board, placePiece, pieces.values())
-            try:
-                board.place(placePiece, *placePos)
-            except PlaceTakenError:
-                self.p1.error()
-                self.p2.error()
-                return
+            board.place(placePiece, *placePos)
             other.piece_placed(placePiece, placePos)
             if pieces:
                 placePiece = nextPlayer.get_piece(board, pieces.values())
@@ -44,6 +40,8 @@ class ServerThread(threading.Thread):
             else:
                 nextPlayer = self.p1
                 other = self.p2
+        self.board = board
+        print board
         if victory:
             if nextPlayer == self.p1:
                 self.winner = self.p2
@@ -52,4 +50,4 @@ class ServerThread(threading.Thread):
 
 
     def get_winner(self):
-        return self.winner
+        return self.winner, self.board
