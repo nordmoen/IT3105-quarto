@@ -27,13 +27,13 @@ class ServerListener(threading.Thread):
         self.log.debug('Creating socket')
         self.socket = socket.socket() #Default ipv4 and TCP
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.log.info('Binding to address %s:%i', self.addr, self.port)
         try:
             self.socket.bind((self.addr, self.port))
         except:
             self.log.exception('Could not bind socket to address: %s:%i', self.addr, self.port)
             self.log.critical('Shuting down after socket error')
             return
+        self.log.info('Socket bound to address: %s:%i', *(self.socket.getsockname()[:2]))
         try:
             self.socket.listen(1)
         except:

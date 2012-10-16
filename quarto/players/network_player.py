@@ -77,9 +77,10 @@ class NetworkPlayer(object):
         self.socket.sendall(const.ERROR)
         self.__shutdown()
 
-    def shutdown(self):
+    def shutdown(self, win, loses, ties):
         self.log.debug('Sending shutdown message')
-        self.socket.sendall(const.SHUTDOWN)
+        self.socket.sendall(const.SHUTDOWN + '\n' + repr(win) + '\n' +
+                repr(loses) + '\n' + ties)
         self.__shutdown()
 
     def __shutdown(self):

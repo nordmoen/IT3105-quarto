@@ -40,7 +40,11 @@ class Server(object):
         for player in self.players:
             if player.is_alive:
                 self.log.info('Shuting down player: %s', player)
-                player.shutdown()
+                try:
+                    player.shutdown(self.wins[player], self.loses[player], self.ties[player])
+                except:
+                    self.log.exception('Player threw exception while trying to send shutdown')
+                    self.log.critical('Stats: %s, %s, %s', self.wins, self.loses, self.ties)
 
     def prepare_players(self):
         for player in self.players:
@@ -50,8 +54,10 @@ class Server(object):
             self.loses[player] = 0
 
     def play_game(self, num_rounds=1):
+        self.log.info('Server starting game mode')
         self.listener.start()
         players_last = len(self.players)
+        self.log.info('Waiting for 2 players to connect')
         while len(self.players) < 2:
             time.sleep(2)
             if len(self.players) != players_last:
@@ -99,8 +105,7 @@ class Server(object):
                 self.log.exception('An error occured while trying to play')
                 for p in self.players:
                     p.error()
-                self.shutdown()
-                return
+                break
         self.shutdown()
         self.log.info('Played %i rounds', num_rounds)
         self.log.info('Results:')

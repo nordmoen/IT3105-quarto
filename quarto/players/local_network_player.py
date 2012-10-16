@@ -75,7 +75,7 @@ class LocalNetworkPlayer(object):
                     mod_games = int(total_games / 10.0)
                 if mod_games > 0:
                     if games % mod_games == 0:
-                        self.log.info('We are %s%% complete!', int((games / float(total_games))*100))
+                        self.log.info('We are %i%% complete!', (games / float(total_games))*100)
                 games += 1
             elif move[0] == const.ERROR:
                 self.log.warning('Got error message from server quiting')
@@ -101,6 +101,11 @@ class LocalNetworkPlayer(object):
                 board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
             elif move[0] == const.SHUTDOWN:
                 self.log.info('Got shutdown message')
+                results = map(int, move[1:])
+                total = sum(results)
+                self.log.info('Wins: %s(%i%%)', move[1], (results[0] / float(total))*100)
+                self.log.info('Loses: %s(%i%%)', move[2], (results[1] / float(total))*100)
+                self.log.info('Ties: %s(%i%%)', move[3], (results[2] / float(total))*100)
                 break
         self.__shutdown()
 
