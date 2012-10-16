@@ -87,7 +87,7 @@ class LocalNetworkPlayer(object):
                 self.socket.sendall(repr(next_piece.val))
             elif move[0] == const.GET_PLACEMENT:
                 self.log.debug('Got get_placement message from server: %s', move)
-                pos = self.player.get_placement(board, Piece(val=int(move[1])), pieces)
+                pos = self.player.get_placement(board, Piece(val=int(move[1])), pieces.values())
                 self.log.debug('Sending pos %s to server', pos)
                 self.socket.sendall(repr(self.translate_pos_int(pos)))
             elif move[0] == const.PIECE_PLACED:
