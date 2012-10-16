@@ -87,12 +87,17 @@ class LocalNetworkPlayer(object):
                 self.socket.sendall(repr(next_piece.val))
             elif move[0] == const.GET_PLACEMENT:
                 self.log.debug('Got get_placement message from server: %s', move)
-                pos = self.player.get_placement(board, Piece(val=int(move[1])), pieces.values())
+                piece = int(move[1])
+                if piece in pieces:
+                    del pieces[piece]
+                pos = self.player.get_placement(board, Piece(val=piece), pieces.values())
                 self.log.debug('Sending pos %s to server', pos)
                 self.socket.sendall(repr(self.translate_pos_int(pos)))
             elif move[0] == const.PIECE_PLACED:
                 self.log.debug('Got placed_piece message from server: %s', move)
-                del pieces[int(move[1])]
+                piece = int(move[1])
+                if piece in pieces:
+                    del pieces[piece]
                 board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
             elif move[0] == const.SHUTDOWN:
                 self.log.info('Got shutdown message')
