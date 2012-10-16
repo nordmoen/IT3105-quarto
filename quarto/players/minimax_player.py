@@ -24,7 +24,7 @@ class MinimaxPlayer(NovicePlayer):
     def reset(self):
         self.change = self.initial_change
         self.placePiece = None
-    
+
     def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
         can be copied to the other players'''
