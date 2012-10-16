@@ -45,7 +45,7 @@ class LocalNetworkPlayer(object):
         else:
             raise socket.error('Could not get a proper response from the server')
         #If we get here we have connected to the server and said hello to it
-        self.log.debug('Connected to server ready to play')
+        self.log.info('Connected to server ready to play')
 
     def play(self):
         '''Method used to start this player playing games with the server.
@@ -55,6 +55,9 @@ class LocalNetworkPlayer(object):
                     ' connect successfully')
             return
         board = None
+        games = 0
+        total_games = 0
+        mod_games = 0
         pieces = None
         while True:
             move = self.socket.recv(4096).split('\n')
@@ -65,6 +68,15 @@ class LocalNetworkPlayer(object):
                 board = Board()
                 pieces = {i:Piece(val=i) for i in range(16)}
                 self.player.reset()
+                games_left = int(move[1])
+                if total_games == 0:
+                    self.log.debug('Updating total_games to: %s', games_left)
+                    total_games = games_left
+                    mod_games = int(total_games / 4.0)
+                if mod_games > 0:
+                    if games % mod_games == 0:
+                        self.log.info('We are %s%% complete!', int((games / float(total_games))*100))
+                games += 1
             elif move[0] == const.ERROR:
                 self.log.warning('Got error message from server quiting')
                 break
@@ -83,7 +95,7 @@ class LocalNetworkPlayer(object):
                 del pieces[int(move[1])]
                 board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
             elif move[0] == const.SHUTDOWN:
-                self.log.debug('Got shutdown message')
+                self.log.info('Got shutdown message')
                 break
         self.__shutdown()
 

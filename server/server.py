@@ -51,10 +51,13 @@ class Server(object):
 
     def play_game(self, num_rounds=1):
         self.listener.start()
+        players_last = len(self.players)
         while len(self.players) < 2:
-            self.log.info('Waiting for %i player(s) to connect',
-                    2-len(self.players))
             time.sleep(2)
+            if len(self.players) != players_last:
+                self.log.info('New player connected, we are waiting for %s more player(s)',
+                        2 - len(self.players))
+                players_last = len(self.players)
             if not self.listener.is_alive():
                 self.log.critical('Server listener died! Shutingdown')
                 return
@@ -70,6 +73,8 @@ class Server(object):
                 break
             self.log.debug('Starting round %i', i + 1)
             try:
+                p1.new_game(num_rounds-i)
+                p2.new_game(num_rounds-i)
                 game = server_thread.ServerThread(p1, p2)
                 game.run()
                 winningPlayer, board = game.get_winner()

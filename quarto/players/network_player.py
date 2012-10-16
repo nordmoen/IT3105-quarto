@@ -21,11 +21,11 @@ class NetworkPlayer(object):
                 self.socket, self.addr)
         self.is_alive = True
 
-    def new_game(self):
+    def new_game(self, games_left):
         '''Method used by the server to indicate that a new game is about to start
         this method will then inform the remote player'''
         self.log.debug('Sending new game message to remote player')
-        self.socket.sendall(const.NEW_GAME)
+        self.socket.sendall(const.NEW_GAME + '\n' + repr(games_left))
 
     def get_piece(self, board, pieces):
         '''Method used by the server to indicate that it want the next piece from

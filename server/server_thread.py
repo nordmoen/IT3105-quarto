@@ -17,8 +17,6 @@ class ServerThread(threading.Thread):
         self.board = None
 
     def run(self):
-        self.p1.new_game()
-        self.p2.new_game()
         pieces = {i:Piece(val=i) for i in range(16)}
         board = Board()
         placePiece = self.p1.get_piece(board, pieces.values())

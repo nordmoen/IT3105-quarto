@@ -45,7 +45,7 @@ class ServerListener(threading.Thread):
             except:
                 self.log.warning('Socket accept trew exception')
                 self.shutdown()
-                return
+                break
             self.log.debug('Got connection from address "%s"', addr)
             hello_msg = conn.recv(128)
             if hello_msg == const.HELLO:
@@ -54,6 +54,7 @@ class ServerListener(threading.Thread):
                 player = network_player.NetworkPlayer(conn, addr)
                 self.log.debug('Adding new player to the list')
                 self.p_list.append(player)
+        self.log.info('Server listener shut down completed')
 
     def shutdown(self):
         self.log.info('Shuting down listener')
@@ -67,4 +68,3 @@ class ServerListener(threading.Thread):
                 self.socket.close()
             except:
                 self.log.exception('Could not shutdown socket')
-        self.log.info('Shutdown complete')
