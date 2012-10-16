@@ -93,7 +93,7 @@ class Server(object):
                 progress = int((float(i + 1) / num_rounds)*100)
                 if progress % 10 == 0:
                     self.log.info('%s%% complete.', progress)
-                #time.sleep(1)#Had a problem where receiver did not get the message
+                time.sleep(1)#Had a problem where receiver did not get the message
                             #without this. Can be a local problem
             except:
                 self.log.exception('An error occured while trying to play')
