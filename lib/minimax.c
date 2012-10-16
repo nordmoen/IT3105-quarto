@@ -296,49 +296,66 @@ int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiec
     int available[16];
     prep_available(board, available);
     QuartoPiece g;
+    int piece_count;
     
 	if(is_valid_piece(a) && is_valid_piece(b) && is_valid_piece(c) && !is_valid_piece(d)){
 		if(((a->piece & b->piece & c->piece) > 0) || ((a->xor & b->xor & c->xor) > 0)){
+		    piece_count=0;
 		    for(int i=0; i<16; i++){
 		        if(available[i]){
 		            g = create_piece_from_int(i);
 		            if(pieces_equal(a, b, c, (&g))){
-		                return 1;
+		                piece_count++;
 		            }
 		        }
+		    }
+		    if(piece_count>0){
+		        return piece_count;
 		    }
 		}
 	}else if(is_valid_piece(a) && is_valid_piece(b) && !is_valid_piece(c) && is_valid_piece(d)){
 		if (((a->piece & b->piece & d->piece) > 0) || ((a->xor & b->xor & d->xor) > 0)){
+		    piece_count=0;
 		    for(int i=0; i<16; i++){
 		        if(available[i]){
 		            g = create_piece_from_int(i);
 		            if(pieces_equal(a, b, d, (&g))){
-		                return 1;
+		                piece_count++;
 		            }
 		        }
+		    }
+		    if(piece_count>0){
+		       return piece_count;
 		    }
 		}
 	}else if(is_valid_piece(a) && !is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
 		if (((a->piece & c->piece & d->piece) > 0) || ((a->xor & c->xor & d->xor) > 0)){
+		    piece_count=0;
 		    for(int i=0; i<16; i++){
 		        if(available[i]){
 		            g = create_piece_from_int(i);
 		            if(pieces_equal(a, d, c, (&g))){
-		                return 1;
+		                piece_count++;
 		            }
 		        }
+		    }
+		    if(piece_count>0){
+		        return piece_count;
 		    }
 		}
 	}else if(!is_valid_piece(a) && is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
 		if (((d->piece & b->piece & c->piece) > 0) || ((d->xor & b->xor & c->xor) > 0)){
+		    piece_count=0;
 		    for(int i=0; i<16; i++){
 		        if(available[i]){
 		            g = create_piece_from_int(i);
 		            if(pieces_equal(d, b, c, (&g))){
-		                return 1;
+		                piece_count++;
 		            }
 		        }
+		    }
+		    if(piece_count>0){
+		        return piece_count;
 		    }
 		}
 	}
