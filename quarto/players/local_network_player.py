@@ -60,7 +60,7 @@ class LocalNetworkPlayer(object):
         mod_games = 0
         pieces = None
         while True:
-            move = self.socket.recv(4096).split('\n')
+            move = self.socket.recv(512).split('\n')
             self.log.debug('Board:\n%s', board)
             self.log.debug('Pieces: %s', pieces)
             if move[0] == const.NEW_GAME:
@@ -72,7 +72,7 @@ class LocalNetworkPlayer(object):
                 if total_games == 0:
                     self.log.debug('Updating total_games to: %s', games_left)
                     total_games = games_left
-                    mod_games = int(total_games / 4.0)
+                    mod_games = int(total_games / 10.0)
                 if mod_games > 0:
                     if games % mod_games == 0:
                         self.log.info('We are %s%% complete!', int((games / float(total_games))*100))

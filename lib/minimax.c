@@ -31,11 +31,12 @@ int quarto_win(QuartoBoard *board);
 int quarto_herustic(QuartoBoard *board);
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
 void debug_print_board(QuartoBoard *board);
-void prep_available(QuartoBoard *board, int *available);
+int prep_available(QuartoBoard *board, int *available);
 int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
 int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
-int quarto_triple(QuartoBoard *board);
+int quarto_triple_neg(QuartoBoard *board);
+int quarto_triple_pos(QuartoBoard *board);
 
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
 {
@@ -171,7 +172,7 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 	return local_alpha;
 }
 
-void prep_available(QuartoBoard *board, int *available)
+int prep_available(QuartoBoard *board, int *available)
 {
 	for(int i = 0; i < 16; i++){
 		//Because C doesn't like to place information in a new array
@@ -180,14 +181,17 @@ void prep_available(QuartoBoard *board, int *available)
 		available[i] = 1;
 	}
 	QuartoPiece tmp;
+	int res = 16;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			tmp = GET_PIECE(i, j, board->board);
 			if(is_valid_piece(&tmp)){
 				available[tmp.piece] = 0;
+				res--;
 			}
 		}
 	}
+	return res;
 }
 
 int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece)
@@ -237,7 +241,9 @@ int quarto_herustic(QuartoBoard *board)
 	}
 	int value = 0;
 	//update the value with different checks to arrive at a final return-value;
-	value -= quarto_triple(board) * 5;
+	value -= quarto_triple_neg(board) * 10; //We want to avoid negative situations like the plague
+	//There are places where we can win, but it's far from guaranteed
+	value += quarto_triple_pos(board) * 5; 
 	return value;
 }
 
@@ -265,28 +271,112 @@ int piece_equal(QuartoPiece *a, QuartoPiece *b)
 	}
 }
 
-int quarto_triple(QuartoBoard *board)
+int quarto_triple_pos(QuartoBoard *board)
 {
 	int numTrips = 0;
+	int avail[16];
+	int num_pieces_left = prep_available(board, avail);
 	for(int i = 0; i < 4; i++){
 		//Horizontal
-		if(pieces_triple(board, &GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
-			&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
-			numTrips++;
+		int horiz_pieces = pieces_triple(board, &GET_PIECE(0,i, board->board), 
+				&GET_PIECE(1,i, board->board), &GET_PIECE(2,i, board->board), 
+				&GET_PIECE(3,i, board->board));
+		if(horiz_pieces > 0){
+			int diff = num_pieces_left - horiz_pieces;
+			if(diff % 2 != 0){
+				//Since there is an odd number of pieces which can not
+				//complete the triple we found we might be able to
+				//force our opponent to give us a piece which we
+				//can win with
+				numTrips++;
+			}
 		}
 		//Vertical
-		if(pieces_triple(board, &GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
-			&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
+		int vert_pieces = pieces_triple(board, &GET_PIECE(i,0, board->board), 
+				&GET_PIECE(i,1, board->board), &GET_PIECE(i,2, board->board), 
+				&GET_PIECE(i,3, board->board));
+		if(vert_pieces > 0){
+			//See logic above
+			int diff = num_pieces_left - vert_pieces;
+			if(diff % 2 != 0){
+				numTrips++;
+			}
+		}
+	}
+	int cross_pieces = pieces_triple(board, &GET_PIECE(0,0, board->board),
+			&GET_PIECE(1,1, board->board), &GET_PIECE(2,2, board->board), 
+			&GET_PIECE(3,3, board->board));
+	if(cross_pieces > 0){
+		//See logic above
+		int diff = num_pieces_left - cross_pieces;
+		if(diff % 2 != 0){
 			numTrips++;
 		}
 	}
-	if(pieces_triple(board, &GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
-		&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
-		numTrips++;
+	int cross2_pieces = pieces_triple(board, &GET_PIECE(0,3, board->board),
+			&GET_PIECE(1,2, board->board), &GET_PIECE(2,1, board->board), 
+			&GET_PIECE(3,0, board->board));
+	if(cross2_pieces > 0){
+		//See logic above
+		int diff = num_pieces_left - cross2_pieces;
+		if(diff % 2 != 0){
+			numTrips++;
+		}
 	}
-	if(pieces_triple(board, &GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
-		&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
-		numTrips++;
+	return numTrips;
+}
+
+int quarto_triple_neg(QuartoBoard *board)
+{
+	int numTrips = 0;
+	int avail[16];
+	int num_pieces_left = prep_available(board, avail);
+	for(int i = 0; i < 4; i++){
+		//Horizontal
+		int horiz_pieces = pieces_triple(board, &GET_PIECE(0,i, board->board), 
+				&GET_PIECE(1,i, board->board), &GET_PIECE(2,i, board->board), 
+				&GET_PIECE(3,i, board->board));
+		if(horiz_pieces > 0){
+			int diff = num_pieces_left - horiz_pieces;
+			if(diff % 2 == 0){
+				//Since there are an even number of pieces which
+				//will not fit into the available third spot
+				//The opponent will force us to give him a winning
+				//piece
+				numTrips++;
+			}
+		}
+		//Vertical
+		int vert_pieces = pieces_triple(board, &GET_PIECE(i,0, board->board), 
+				&GET_PIECE(i,1, board->board), &GET_PIECE(i,2, board->board), 
+				&GET_PIECE(i,3, board->board));
+		if(vert_pieces > 0){
+			//See logic above
+			int diff = num_pieces_left - vert_pieces;
+			if(diff % 2 == 0){
+				numTrips++;
+			}
+		}
+	}
+	int cross_pieces = pieces_triple(board, &GET_PIECE(0,0, board->board),
+			&GET_PIECE(1,1, board->board), &GET_PIECE(2,2, board->board), 
+			&GET_PIECE(3,3, board->board));
+	if(cross_pieces > 0){
+		//See logic above
+		int diff = num_pieces_left - cross_pieces;
+		if(diff % 2 == 0){
+			numTrips++;
+		}
+	}
+	int cross2_pieces = pieces_triple(board, &GET_PIECE(0,3, board->board),
+			&GET_PIECE(1,2, board->board), &GET_PIECE(2,1, board->board), 
+			&GET_PIECE(3,0, board->board));
+	if(cross2_pieces > 0){
+		//See logic above
+		int diff = num_pieces_left - cross2_pieces;
+		if(diff % 2 == 0){
+			numTrips++;
+		}
 	}
 	return numTrips;
 }

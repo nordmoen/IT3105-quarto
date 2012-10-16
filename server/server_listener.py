@@ -26,6 +26,7 @@ class ServerListener(threading.Thread):
     def run(self):
         self.log.debug('Creating socket')
         self.socket = socket.socket() #Default ipv4 and TCP
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.log.info('Binding to address %s:%i', self.addr, self.port)
         try:
             self.socket.bind((self.addr, self.port))
