@@ -34,7 +34,7 @@ void debug_print_board(QuartoBoard *board);
 void prep_available(QuartoBoard *board, int *available);
 int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
-int pieces_triple(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
+int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
 int quarto_triple(QuartoBoard *board);
 
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
@@ -270,40 +270,79 @@ int quarto_triple(QuartoBoard *board)
 	int numTrips = 0;
 	for(int i = 0; i < 4; i++){
 		//Horizontal
-		if(pieces_triple(&GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
+		if(pieces_triple(board, &GET_PIECE(0,i, board->board), &GET_PIECE(1,i, board->board),
 			&GET_PIECE(2,i, board->board), &GET_PIECE(3,i, board->board))){
 			numTrips++;
 		}
 		//Vertical
-		if(pieces_triple(&GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
+		if(pieces_triple(board, &GET_PIECE(i,0, board->board), &GET_PIECE(i,1, board->board),
 			&GET_PIECE(i,2, board->board), &GET_PIECE(i,3, board->board))){
 			numTrips++;
 		}
 	}
-	if(pieces_triple(&GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
+	if(pieces_triple(board, &GET_PIECE(0,0, board->board),&GET_PIECE(1,1, board->board),
 		&GET_PIECE(2,2, board->board), &GET_PIECE(3,3, board->board))){
 		numTrips++;
 	}
-	if(pieces_triple(&GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
+	if(pieces_triple(board, &GET_PIECE(0,3, board->board),&GET_PIECE(1,2, board->board),
 		&GET_PIECE(2,1, board->board), &GET_PIECE(3,0, board->board))){
 		numTrips++;
 	}
 	return numTrips;
 }
 
-int pieces_triple(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
+int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
 {
+    int available[16];
+    prep_available(board, available);
+    QuartoPiece g;
+    
 	if(is_valid_piece(a) && is_valid_piece(b) && is_valid_piece(c) && !is_valid_piece(d)){
-		return ((a->piece & b->piece & c->piece) > 0) || ((a->xor & b->xor & c->xor) > 0);
+		if(((a->piece & b->piece & c->piece) > 0) || ((a->xor & b->xor & c->xor) > 0)){
+		    for(int i=0; i<16; i++){
+		        if(available[i]){
+		            g = create_piece_from_int(i);
+		            if(pieces_equal(a, b, c, (&g))){
+		                return 1;
+		            }
+		        }
+		    }
+		}
 	}else if(is_valid_piece(a) && is_valid_piece(b) && !is_valid_piece(c) && is_valid_piece(d)){
-		return ((a->piece & b->piece & d->piece) > 0) || ((a->xor & b->xor & d->xor) > 0);
+		if (((a->piece & b->piece & d->piece) > 0) || ((a->xor & b->xor & d->xor) > 0)){
+		    for(int i=0; i<16; i++){
+		        if(available[i]){
+		            g = create_piece_from_int(i);
+		            if(pieces_equal(a, b, d, (&g))){
+		                return 1;
+		            }
+		        }
+		    }
+		}
 	}else if(is_valid_piece(a) && !is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
-		return ((a->piece & c->piece & d->piece) > 0) || ((a->xor & c->xor & d->xor) > 0);
+		if (((a->piece & c->piece & d->piece) > 0) || ((a->xor & c->xor & d->xor) > 0)){
+		    for(int i=0; i<16; i++){
+		        if(available[i]){
+		            g = create_piece_from_int(i);
+		            if(pieces_equal(a, d, c, (&g))){
+		                return 1;
+		            }
+		        }
+		    }
+		}
 	}else if(!is_valid_piece(a) && is_valid_piece(b) && is_valid_piece(c) && is_valid_piece(d)){
-		return ((b->piece & c->piece & d->piece) > 0) || ((b->xor & c->xor & d->xor) > 0);
-	}else{
-		return 0;
+		if (((d->piece & b->piece & c->piece) > 0) || ((d->xor & b->xor & c->xor) > 0)){
+		    for(int i=0; i<16; i++){
+		        if(available[i]){
+		            g = create_piece_from_int(i);
+		            if(pieces_equal(d, b, c, (&g))){
+		                return 1;
+		            }
+		        }
+		    }
+		}
 	}
+	return 0;
 }
 
 
