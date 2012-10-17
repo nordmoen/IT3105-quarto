@@ -54,60 +54,71 @@ class LocalNetworkPlayer(object):
             self.log.critical('Can not call method play without first calling' +
                     ' connect successfully')
             return
-        board = None
-        games = 0
-        total_games = 0
-        mod_games = 0
-        pieces = None
+        self.board = None
+        self.games = 0
+        self.total_games = 0
+        self.mod_games = 0
+        self.pieces = None
         while True:
-            move = self.socket.recv(512).split('\n')
-            self.log.debug('Board:\n%s', board)
-            self.log.debug('Pieces: %s', pieces)
-            if move[0] == const.NEW_GAME:
-                self.log.debug('Got new_game message from server reseting player')
-                board = Board()
-                pieces = {i:Piece(val=i) for i in range(16)}
-                self.player.reset()
-                games_left = int(move[1])
-                if total_games == 0:
-                    self.log.debug('Updating total_games to: %s', games_left)
-                    total_games = games_left
-                    mod_games = int(total_games / 10.0)
-                if mod_games > 0:
-                    if games % mod_games == 0:
-                        self.log.info('We are %i%% complete!', (games / float(total_games))*100)
-                games += 1
-            elif move[0] == const.ERROR:
-                self.log.warning('Got error message from server quiting')
-                break
-            elif move[0] == const.GET_PIECE:
-                self.log.debug('Got get_piece message from server: %s', move)
-                next_piece = self.player.get_piece(board, pieces.values())
-                self.log.debug('Sending piece: %s(%r) to server', next_piece, next_piece)
-                self.socket.sendall(repr(next_piece.val))
-            elif move[0] == const.GET_PLACEMENT:
-                self.log.debug('Got get_placement message from server: %s', move)
-                piece = int(move[1])
-                if piece in pieces:
-                    del pieces[piece]
-                pos = self.player.get_placement(board, Piece(val=piece), pieces.values())
-                self.log.debug('Sending pos %s to server', pos)
-                self.socket.sendall(repr(self.translate_pos_int(pos)))
-            elif move[0] == const.PIECE_PLACED:
-                self.log.debug('Got placed_piece message from server: %s', move)
-                piece = int(move[1])
-                if piece in pieces:
-                    del pieces[piece]
-                board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
-            elif move[0] == const.SHUTDOWN:
-                self.log.info('Got shutdown message')
-                results = map(int, move[1:])
-                total = sum(results)
-                self.log.info('Wins: %s(%i%%)', move[1], (results[0] / float(total))*100)
-                self.log.info('Loses: %s(%i%%)', move[2], (results[1] / float(total))*100)
-                self.log.info('Ties: %s(%i%%)', move[3], (results[2] / float(total))*100)
+            move = self.socket.recv(512)
+            self.log.debug('Got message: %r', move)
+            self.log.debug('Board:\n%s', self.board)
+            self.log.debug('Pieces: %s', self.pieces)
+            if not self.handle_message(move):
                 break
         self.__shutdown()
+
+    def handle_message(self, message):
+        m = message.split('\0')
+        m = filter(None, m)
+        move = m[0].split('\n')
+        if move[0] == const.NEW_GAME:
+            self.log.debug('Got new_game message from server reseting player')
+            self.board = Board()
+            self.pieces = {i:Piece(val=i) for i in range(16)}
+            self.player.reset()
+            games_left = int(move[1])
+            if self.total_games == 0:
+                self.log.debug('Updating total_games to: %s', games_left)
+                self.total_games = games_left
+                self.mod_games = int(self.total_games / 10.0)
+            if self.mod_games > 0:
+                if self.games % self.mod_games == 0:
+                    self.log.info('We are %i%% complete!', (self.games / float(self.total_games))*100)
+            self.games += 1
+        elif move[0] == const.ERROR:
+            self.log.warning('Got error message from server quiting')
+            return False
+        elif move[0] == const.GET_PIECE:
+            self.log.debug('Got get_piece message from server: %s', move)
+            next_piece = self.player.get_piece(self.board, self.pieces.values())
+            self.log.debug('Sending piece: %s(%r) to server', next_piece, next_piece)
+            self.socket.sendall(repr(next_piece.val))
+        elif move[0] == const.GET_PLACEMENT:
+            self.log.debug('Got get_placement message from server: %s', move)
+            piece = int(move[1])
+            if piece in self.pieces:
+                del self.pieces[piece]
+            pos = self.player.get_placement(self.board, Piece(val=piece), self.pieces.values())
+            self.log.debug('Sending pos %s to server', pos)
+            self.socket.sendall(repr(self.translate_pos_int(pos)))
+        elif move[0] == const.PIECE_PLACED:
+            self.log.debug('Got placed_piece message from server: %s', move)
+            piece = int(move[1])
+            if piece in self.pieces:
+                del self.pieces[piece]
+            self.board.place(Piece(val=int(move[1])), *self.translate_int_pos(int(move[2])))
+        elif move[0] == const.SHUTDOWN:
+            self.log.info('Got shutdown message')
+            results = map(int, move[1:])
+            total = sum(results)
+            self.log.info('Wins: %s(%i%%)', move[1], (results[0] / float(total))*100)
+            self.log.info('Loses: %s(%i%%)', move[2], (results[1] / float(total))*100)
+            self.log.info('Ties: %s(%i%%)', move[3], (results[2] / float(total))*100)
+            return False
+        if len(m) > 1:
+            return self.handle_message('\0'.join(m[1:]))
+        return True
 
     def translate_int_pos(self, i):
         '''Translate from int:
