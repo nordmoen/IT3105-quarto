@@ -1,42 +1,13 @@
 #include <Python.h>
 #include <string.h>
+#include <minimax.h>
 
 #define GET_PIECE(x, y, board1) board1[y*4 + x]
 #define SET_PIECE(x, y, board1, piece) board1[y*4+x]=piece
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-typedef struct{
-	unsigned char piece;
-	unsigned char xor;
-}QuartoPiece;
 
-typedef struct{
-	QuartoPiece board[4*4];
-	int size;
-}QuartoBoard;
-
-typedef struct{
-	unsigned char x;
-	unsigned char y;
-	unsigned char next_piece;
-}MinimaxRes;
-
-//Prototypes:
-QuartoPiece create_piece_from_int(unsigned char val);
-int is_valid_piece(QuartoPiece *piece);
-int piece_equal(QuartoPiece *a, QuartoPiece *b);
-int pieces_equal(QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
-int quarto_win(QuartoBoard *board);
-int quarto_herustic(QuartoBoard *board);
-int set_piece(QuartoBoard *board, int x, int y, QuartoPiece *piece);
-void debug_print_board(QuartoBoard *board);
-int prep_available(QuartoBoard *board, int *available);
-int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
-int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta);
-int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d);
-int quarto_triple_neg(QuartoBoard *board);
-int quarto_triple_pos(QuartoBoard *board);
 
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
 {
@@ -236,6 +207,9 @@ int quarto_herustic(QuartoBoard *board)
 	if(quarto_win(board)){
 		return 100;
 	}
+	if(quarto_gloss(board)){
+	    return -100;
+	}
 	if(board->size==16){
 	    return 0;
 	}
@@ -276,11 +250,12 @@ int quarto_triple_pos(QuartoBoard *board)
 	int numTrips = 0;
 	int avail[16];
 	int num_pieces_left = prep_available(board, avail);
+	TriplePiece tp;
 	for(int i = 0; i < 4; i++){
 		//Horizontal
 		int horiz_pieces = pieces_triple(board, &GET_PIECE(0,i, board->board), 
 				&GET_PIECE(1,i, board->board), &GET_PIECE(2,i, board->board), 
-				&GET_PIECE(3,i, board->board));
+				&GET_PIECE(3,i, board->board), &tp);
 		if(horiz_pieces > 0){
 			int diff = num_pieces_left - horiz_pieces;
 			if(diff % 2 != 0){
@@ -294,7 +269,7 @@ int quarto_triple_pos(QuartoBoard *board)
 		//Vertical
 		int vert_pieces = pieces_triple(board, &GET_PIECE(i,0, board->board), 
 				&GET_PIECE(i,1, board->board), &GET_PIECE(i,2, board->board), 
-				&GET_PIECE(i,3, board->board));
+				&GET_PIECE(i,3, board->board), &tp);
 		if(vert_pieces > 0){
 			//See logic above
 			int diff = num_pieces_left - vert_pieces;
@@ -305,7 +280,7 @@ int quarto_triple_pos(QuartoBoard *board)
 	}
 	int cross_pieces = pieces_triple(board, &GET_PIECE(0,0, board->board),
 			&GET_PIECE(1,1, board->board), &GET_PIECE(2,2, board->board), 
-			&GET_PIECE(3,3, board->board));
+			&GET_PIECE(3,3, board->board), &tp);
 	if(cross_pieces > 0){
 		//See logic above
 		int diff = num_pieces_left - cross_pieces;
@@ -315,7 +290,7 @@ int quarto_triple_pos(QuartoBoard *board)
 	}
 	int cross2_pieces = pieces_triple(board, &GET_PIECE(0,3, board->board),
 			&GET_PIECE(1,2, board->board), &GET_PIECE(2,1, board->board), 
-			&GET_PIECE(3,0, board->board));
+			&GET_PIECE(3,0, board->board), &tp);
 	if(cross2_pieces > 0){
 		//See logic above
 		int diff = num_pieces_left - cross2_pieces;
@@ -331,11 +306,12 @@ int quarto_triple_neg(QuartoBoard *board)
 	int numTrips = 0;
 	int avail[16];
 	int num_pieces_left = prep_available(board, avail);
+	TriplePiece tp;
 	for(int i = 0; i < 4; i++){
 		//Horizontal
 		int horiz_pieces = pieces_triple(board, &GET_PIECE(0,i, board->board), 
 				&GET_PIECE(1,i, board->board), &GET_PIECE(2,i, board->board), 
-				&GET_PIECE(3,i, board->board));
+				&GET_PIECE(3,i, board->board), &tp);
 		if(horiz_pieces > 0){
 			int diff = num_pieces_left - horiz_pieces;
 			if(diff % 2 == 0){
@@ -349,7 +325,7 @@ int quarto_triple_neg(QuartoBoard *board)
 		//Vertical
 		int vert_pieces = pieces_triple(board, &GET_PIECE(i,0, board->board), 
 				&GET_PIECE(i,1, board->board), &GET_PIECE(i,2, board->board), 
-				&GET_PIECE(i,3, board->board));
+				&GET_PIECE(i,3, board->board), &tp);
 		if(vert_pieces > 0){
 			//See logic above
 			int diff = num_pieces_left - vert_pieces;
@@ -360,7 +336,7 @@ int quarto_triple_neg(QuartoBoard *board)
 	}
 	int cross_pieces = pieces_triple(board, &GET_PIECE(0,0, board->board),
 			&GET_PIECE(1,1, board->board), &GET_PIECE(2,2, board->board), 
-			&GET_PIECE(3,3, board->board));
+			&GET_PIECE(3,3, board->board), &tp);
 	if(cross_pieces > 0){
 		//See logic above
 		int diff = num_pieces_left - cross_pieces;
@@ -370,7 +346,7 @@ int quarto_triple_neg(QuartoBoard *board)
 	}
 	int cross2_pieces = pieces_triple(board, &GET_PIECE(0,3, board->board),
 			&GET_PIECE(1,2, board->board), &GET_PIECE(2,1, board->board), 
-			&GET_PIECE(3,0, board->board));
+			&GET_PIECE(3,0, board->board), &tp);
 	if(cross2_pieces > 0){
 		//See logic above
 		int diff = num_pieces_left - cross2_pieces;
@@ -381,7 +357,75 @@ int quarto_triple_neg(QuartoBoard *board)
 	return numTrips;
 }
 
-int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d)
+
+int quarto_gloss(QuartoBoard *board)
+{
+	TriplePiece tps[10];
+	int size = 0;
+	for(int i = 0; i < 4; i++){
+    	TriplePiece tp;
+		//Horizontal
+		if (pieces_triple(board, &GET_PIECE(0,i, board->board), 
+		    &GET_PIECE(1,i, board->board), &GET_PIECE(2,i, board->board), 
+            &GET_PIECE(3,i, board->board), &tp))
+        {
+            tps[size] = tp;
+            size++;
+        }
+		//Vertical
+        TriplePiece tp2;
+		if (pieces_triple(board, &GET_PIECE(i,0, board->board), 
+			&GET_PIECE(i,1, board->board), &GET_PIECE(i,2, board->board), 
+			&GET_PIECE(i,3, board->board), &tp2))
+		{
+		    tps[size] = tp2;
+		    size++;
+		}
+	}
+	TriplePiece tp3;
+	if (pieces_triple(board, &GET_PIECE(0,0, board->board),
+		&GET_PIECE(1,1, board->board), &GET_PIECE(2,2, board->board), 
+		&GET_PIECE(3,3, board->board), &tp3))
+	{
+	    tps[size] = tp3;
+	    size++;
+	}
+	TriplePiece tp4;
+	if (pieces_triple(board, &GET_PIECE(0,3, board->board),
+		&GET_PIECE(1,2, board->board), &GET_PIECE(2,1, board->board), 
+		&GET_PIECE(3,0, board->board), &tp4))
+	{
+	    tps[size] = tp4;
+	    size++;
+	}
+	for(int i=0; i<size-1; i++)
+	{
+	    for(int j=i+1; j<size; j++)
+	    {
+	        QuartoPiece *a1 = tps[i].a;
+	        QuartoPiece *a2 = tps[j].a;
+	        QuartoPiece *b1 = tps[i].b;
+	        QuartoPiece *b2 = tps[j].b;
+	        QuartoPiece *c1 = tps[i].c;
+	        QuartoPiece *c2 = tps[j].c;
+	        int val1 = (a1->piece & b1->piece & c1->piece);
+	        int val2 = (a2->piece & b2->piece & c2->piece);
+	        int xor1 = (a1->xor & b1->xor & c1->xor);
+	        int xor2 = (a2->xor & b2->xor & c2->xor);
+	        
+	        if (val1 == xor2)
+	        {
+	            return 1;
+	        } else if (val2 == xor1)
+	        {
+	            return 1;
+	        }
+	    }
+	}
+	return 0;
+}
+
+int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiece *c, QuartoPiece *d, TriplePiece *tp)
 {
     int available[16];
     prep_available(board, available);
@@ -400,6 +444,9 @@ int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiec
 		        }
 		    }
 		    if(piece_count>0){
+		        tp->a = a;
+		        tp->b = b;
+		        tp->c = c;
 		        return piece_count;
 		    }
 		}
@@ -415,6 +462,9 @@ int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiec
 		        }
 		    }
 		    if(piece_count>0){
+                tp->a = a;
+		        tp->b = b;
+		        tp->c = d;
 		       return piece_count;
 		    }
 		}
@@ -430,6 +480,9 @@ int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiec
 		        }
 		    }
 		    if(piece_count>0){
+                tp->a = a;
+		        tp->b = c;
+		        tp->c = d;
 		        return piece_count;
 		    }
 		}
@@ -445,6 +498,9 @@ int pieces_triple(QuartoBoard *board, QuartoPiece *a, QuartoPiece *b, QuartoPiec
 		        }
 		    }
 		    if(piece_count>0){
+                tp->a = c;
+		        tp->b = b;
+		        tp->c = d;
 		        return piece_count;
 		    }
 		}
