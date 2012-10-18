@@ -60,16 +60,16 @@ class LocalNetworkPlayer(object):
         self.mod_games = 0
         self.pieces = None
         while True:
-            move = self.socket.recv(512).split()
+            move = self.socket.recv(512).split('\n')
             self.log.debug('Got message: %r', move)
             self.log.debug('Board:\n%s', self.board)
             self.log.debug('Pieces: %s', self.pieces)
-            if not self.handle_message(move):
+            if not self.handle_message(filter(None, move)):
                 break
         self.__shutdown()
 
     def handle_message(self, message):
-        move = message[0]
+        move = message[0].split(' ')
         if move[0] == const.NEW_GAME:
             self.log.debug('Got new_game message from server reseting player')
             self.board = Board()

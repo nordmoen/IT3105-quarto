@@ -2,6 +2,7 @@
 
 import logging
 import time
+import random
 
 import server_listener
 import server_thread
@@ -33,13 +34,13 @@ class Server(object):
 
     def shutdown(self):
         if self.listener.listen:
-            self.log.info('Shuting down server listener')
+            self.log.info('Shutting down server listener')
             self.listener.shutdown()
         if self.listener.is_alive():
             self.log.warning('Listener thread is stile alive')
         for player in self.players:
             if player.is_alive:
-                self.log.info('Shuting down player: %s', player)
+                self.log.info('Shutting down player: %s', player)
                 try:
                     player.shutdown(self.wins[player], self.loses[player], self.ties[player])
                 except:
@@ -48,6 +49,10 @@ class Server(object):
 
     def prepare_players(self):
         for player in self.players:
+            self.prepare_player(player)
+
+    def prepare_player(self, player):
+        if player not in self.wins:
             self.log.debug('Preparing: %s', player)
             self.wins[player] = 0
             self.ties[player] = 0
@@ -65,7 +70,7 @@ class Server(object):
                         2 - len(self.players))
                 players_last = len(self.players)
             if not self.listener.is_alive():
-                self.log.critical('Server listener died! Shutingdown')
+                self.log.critical('Server listener died! Shutting down')
                 return
         self.listener.shutdown() #We don't need this any more
         self.log.info('Players connected, starting game')
@@ -102,18 +107,88 @@ class Server(object):
                 time.sleep(1)#Had a problem where receiver did not get the message
                             #without this. Can be a local problem
             except:
-                self.log.exception('An error occured while trying to play')
+                self.log.exception('An error occurred while trying to play')
                 for p in self.players:
                     p.error()
                 break
         self.shutdown()
         self.log.info('Played %i rounds', num_rounds)
+        self.print_result()
+
+    def print_result(self):
         self.log.info('Results:')
-        self.log.info('\t Player %s won %s times(%s%%), lost %s times(%s%%)', str(p1),
-                self.wins[p1], int((float(self.wins[p1])/num_rounds)*100),
-                self.loses[p1], int((float(self.loses[p1])/num_rounds)*100))
-        self.log.info('\t Player %s won %s times(%s%%), lost %s times(%s%%)', str(p2),
-                self.wins[p2], int((float(self.wins[p2])/num_rounds)*100),
-                self.loses[p2], int((float(self.loses[p2])/num_rounds)*100))
-        self.log.info('\t Ties: %s(%s%%)', self.ties[p1],
-                int((float(self.ties[p2])/num_rounds)*100))
+        for p1 in self.players:
+            sum_rounds = self.wins[p1] + self.loses[p1] + self.ties[p1]
+            if sum_rounds > 0:
+                self.log.info('\t Player %s won %s times(%i%%), lost %s times(%i%%)' +
+                        ' and tied %s times(%i%%)', str(p1),
+                        self.wins[p1], (float(self.wins[p1])/sum_rounds)*100,
+                        self.loses[p1], (float(self.loses[p1])/sum_rounds)*100,
+                        self.ties[p1], (float(self.ties[p1])/sum_rounds)*100)
+
+    def create_random_population(self, population, size):
+        result = []
+        pop = population[:]
+        while len(pop) > size - 1:
+            new_pop = random.sample(pop, size)
+            for i in new_pop:
+                pop.remove(i)
+            result.append(new_pop)
+        return result
+
+    def play_continuous(self):
+        self.log.info('Server starting continuous mode')
+        self.listener.start()
+        try:
+            while True:
+               if len(self.players) > 1:
+                    players = self.players[:]
+                    for p in players:
+                        if not p.is_alive:
+                            players.remove(p)
+                            self.players.remove(p)
+                            if len(players) == 0:
+                                break
+                            continue
+                        else:
+                            self.prepare_player(p)
+                    self.log.info('Starting round with %i players', len(players))
+                    play_threads = []
+                    playing = self.create_random_population(players, 2)
+                    self.log.info('Players playing this round: %r', playing)
+                    for pair in playing:
+                        t = server_thread.ServerThread(pair[0], pair[1])
+                        try:
+                            pair[0].new_game(1)
+                            pair[1].new_game(1)
+                        except:
+                            self.log.debug('Player is not responding')
+                            continue
+                        t.start()
+                        play_threads.append(t)
+                    for thread in play_threads:
+                        thread.join()
+                        p1 = thread.p1
+                        p2 = thread.p2
+                        winner, board = thread.get_winner()
+                        if not board:
+                            #The thread has closed, likely because one of the players
+                            #has quit the game
+                            continue
+                        if not winner:
+                            self.ties[p1] += 1
+                            self.ties[p2] += 1
+                        else:
+                            if winner == p1:
+                                self.wins[p1] += 1
+                                self.loses[p2] += 1
+                            else:
+                                self.wins[p2] += 1
+                                self.loses[p1] += 1
+                    self.log.info('Round completed, played %s game(s)', len(playing))
+               else:
+                   time.sleep(2)
+        except:
+            self.log.exception('Server threw exception while playing continuously')
+        self.shutdown()
+        self.print_result()

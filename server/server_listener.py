@@ -8,7 +8,7 @@ import constants as const
 
 class ServerListener(threading.Thread):
     '''This class represent a thread which will be listening for
-    incomming request to join the server and will add those requsting
+    incoming request to join the server and will add those requesting
     to a list of players which the server can use to start games'''
 
     def __init__(self, player_list, bind_addr, port, log = None):
@@ -31,7 +31,7 @@ class ServerListener(threading.Thread):
             self.socket.bind((self.addr, self.port))
         except:
             self.log.exception('Could not bind socket to address: %s:%i', self.addr, self.port)
-            self.log.critical('Shuting down after socket error')
+            self.log.critical('Shutting down after socket error')
             return
         self.log.info('Socket bound to address: %s:%i', *(self.socket.getsockname()[:2]))
         try:
@@ -44,7 +44,7 @@ class ServerListener(threading.Thread):
             try:
                 conn, addr = self.socket.accept()
             except:
-                self.log.warning('Socket accept trew exception')
+                self.log.warning('Socket accept threw exception')
                 self.shutdown()
                 break
             self.log.debug('Got connection from address "%s"', addr)
@@ -58,13 +58,13 @@ class ServerListener(threading.Thread):
         self.log.info('Server listener shut down completed')
 
     def shutdown(self):
-        self.log.info('Shuting down listener')
+        self.log.info('Shutting down listener')
         self.listen = False
         if self.socket:
             try:
                 self.socket.shutdown(socket.SHUT_RDWR)
             except:
-                self.log.debug('Shutdown threw error while shuting down')
+                self.log.debug('Shutdown threw error while shutting down')
             try:
                 self.socket.close()
             except:

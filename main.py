@@ -28,7 +28,7 @@ def start_server(args):
         if args.game:
             serv.play_game(int(args.rounds))
         elif args.continuous:
-            raise NotImplementedError('Continuous mode is not yet implemented for server')
+            raise NotImplementedError('Continuous mode is not implemented')
     except KeyboardInterrupt:
         serv.shutdown()
 
