@@ -25,7 +25,7 @@ class NetworkPlayer(object):
         '''Method used by the server to indicate that a new game is about to start
         this method will then inform the remote player'''
         self.log.debug('Sending new game message to remote player')
-        self.socket.sendall(const.NEW_GAME + '\n' + repr(games_left) + '\0')
+        self.socket.sendall(const.NEW_GAME + ' ' + repr(games_left) + '\n')
 
     def get_piece(self, board, pieces):
         '''Method used by the server to indicate that it want the next piece from
@@ -33,7 +33,7 @@ class NetworkPlayer(object):
         return the appropriate value'''
         self.log.debug('Sending get_piece message to remote player')
         sending_pieces = map(lambda x: x.val, pieces)
-        self.socket.sendall(const.GET_PIECE + '\n' + repr(sending_pieces) + '\0')
+        self.socket.sendall(const.GET_PIECE + ' ' + repr(sending_pieces) + '\n')
         piece = self.socket.recv(128)
         p = Piece(val=int(piece))
         self.log.debug('Got piece: %s(%r) from player', p, p)
@@ -57,15 +57,15 @@ class NetworkPlayer(object):
 
     def piece_placed(self, piece, pos):
         self.log.debug('Sending piece_placed message to remote player')
-        self.socket.sendall(const.PIECE_PLACED + '\n' + repr(piece.val) + '\n' +
-                repr(self.translate_pos(pos)) + '\0')
+        self.socket.sendall(const.PIECE_PLACED + ' ' + repr(piece.val) + ' ' +
+                repr(self.translate_pos(pos)) + '\n')
 
     def get_placement(self, board, piece, pieces):
         '''Method used by the server to retrieve the next position that the
         remote player want to place the given piece in, this method will contact
         the remote player and relay the necessary information'''
         self.log.debug('Sending get_placement message to remote player')
-        self.socket.sendall(const.GET_PLACEMENT + '\n' + repr(piece.val) + '\0')
+        self.socket.sendall(const.GET_PLACEMENT + ' ' + repr(piece.val) + '\n')
         placement = self.socket.recv(128)
         self.log.debug('Got placement: %r', placement)
         return self.translate_int_pos(int(placement))
@@ -74,13 +74,13 @@ class NetworkPlayer(object):
         '''Method called by the server to tell a remote player that an error
         occurred and that it can no longer send or receive more messages'''
         self.log.warning('Sending error message to player')
-        self.socket.sendall(const.ERROR + '\0')
+        self.socket.sendall(const.ERROR + '\n')
         self.__shutdown()
 
     def shutdown(self, win, loses, ties):
         self.log.debug('Sending shutdown message')
-        self.socket.sendall(const.SHUTDOWN + '\n' + repr(win) + '\n' +
-                repr(loses) + '\n' + repr(ties) + '\0')
+        self.socket.sendall(const.SHUTDOWN + ' ' + repr(win) + ' ' +
+                repr(loses) + ' ' + repr(ties) + '\n')
         self.__shutdown()
 
     def __shutdown(self):

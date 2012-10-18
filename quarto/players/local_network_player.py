@@ -60,7 +60,7 @@ class LocalNetworkPlayer(object):
         self.mod_games = 0
         self.pieces = None
         while True:
-            move = self.socket.recv(512)
+            move = self.socket.recv(512).split()
             self.log.debug('Got message: %r', move)
             self.log.debug('Board:\n%s', self.board)
             self.log.debug('Pieces: %s', self.pieces)
@@ -69,9 +69,7 @@ class LocalNetworkPlayer(object):
         self.__shutdown()
 
     def handle_message(self, message):
-        m = message.split('\0')
-        m = filter(None, m)
-        move = m[0].split('\n')
+        move = message[0]
         if move[0] == const.NEW_GAME:
             self.log.debug('Got new_game message from server reseting player')
             self.board = Board()
@@ -116,8 +114,8 @@ class LocalNetworkPlayer(object):
             self.log.info('Loses: %s(%i%%)', move[2], (results[1] / float(total))*100)
             self.log.info('Ties: %s(%i%%)', move[3], (results[2] / float(total))*100)
             return False
-        if len(m) > 1:
-            return self.handle_message('\0'.join(m[1:]))
+        if len(message) > 1:
+            return self.handle_message(message[1:])
         return True
 
     def translate_int_pos(self, i):
