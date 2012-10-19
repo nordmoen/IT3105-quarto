@@ -15,6 +15,7 @@ class LocalNetworkPlayer(object):
         self.port = port
         self.player = player
         self.socket = None
+        self.progress = 0
         if not log:
             self.log = logging.getLogger(self.__class__.__name__)
         else:
@@ -79,10 +80,13 @@ class LocalNetworkPlayer(object):
             if self.total_games == 0:
                 self.log.debug('Updating total_games to: %s', games_left)
                 self.total_games = games_left
-                self.mod_games = int(self.total_games / 10.0)
-            if self.mod_games > 0:
-                if self.games % self.mod_games == 0:
-                    self.log.info('We are %i%% complete!', (self.games / float(self.total_games))*100)
+                self.mod_games = self.total_games / 10.0
+#            if self.mod_games > 0:
+#                if self.games % self.mod_games == 0:
+#                    self.log.info('We are %i%% complete!', (self.games / float(self.total_games))*100)
+            if self.games % (self.mod_games) == 0:
+                self.log.info('%i%% complete.', self.progress * 10)
+                self.progress += 1
             self.games += 1
         elif move[0] == const.ERROR:
             self.log.warning('Got error message from server quiting')

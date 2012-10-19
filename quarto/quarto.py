@@ -17,9 +17,11 @@ def main(player1, player2, num_rounds, simulate=False):
         if not simulate:
             print_game_stats(player1, player2, winner, board, win_pos, last_placed_pos)
         game = Game(player2, player1)
-        progress = int((float(i + 1) / num_rounds)*100)
-        if mod_games % progress == 0:
-            print '{}% complete.'.format(progress)
+        if i % (num_rounds/10) == 0:
+            print '{}% complete.'.format(progress*10)
+            progress += 1
+    print '100% complete.'
+
     if simulate:
         print 'Game statistics:'
         print 'Total games played: {}'.format(num_rounds)
