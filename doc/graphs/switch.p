@@ -1,7 +1,7 @@
 #Gnuplot script to graph out the plot for when minimax should switch
 #Data is inside minimax.dat
 
-set terminal postscript eps monochrome dashed lw 2
+set terminal epslatex monochrome dashed lw 2
 set title "Comparison of when Minimax player should switch from novice to minimax"
 set xlabel "Against Minimax player switching after"
 set ylabel "Percentage of wins"
