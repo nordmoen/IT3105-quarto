@@ -20,6 +20,7 @@ def main(player1, player2, num_rounds, simulate=False):
             game = Game(player2, player1)
         else:
             game = Game(player1, player2)
+
         if i % (num_rounds/10) == 0:
             print '{}% complete.'.format(progress*10)
             progress += 1
