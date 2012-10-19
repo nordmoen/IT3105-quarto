@@ -16,10 +16,14 @@ def main(player1, player2, num_rounds, simulate=False):
             res[winner] += 1
         if not simulate:
             print_game_stats(player1, player2, winner, board, win_pos, last_placed_pos)
+<<<<<<< HEAD
         if i % 2 == 0:
             game = Game(player2, player1)
         else:
             game = Game(player1, player2)
+=======
+        game = Game(player2, player1)
+>>>>>>> 1d3b62f21f6144cc453e80d06f3f7703131e9f25
         if i % (num_rounds/10) == 0:
             print '{}% complete.'.format(progress*10)
             progress += 1
