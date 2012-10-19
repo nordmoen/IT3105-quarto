@@ -11,14 +11,14 @@ class NovicePlayer(RandomPlayer):
         else:
             #return super(NovicePlayer, self).get_placement(board, piece, pieces)
             return RandomPlayer.get_placement(self, board, piece, pieces)
-    
+
     def get_piece(self, board, pieces):
         for piece in pieces:
             win, pos = self.has_winning_pos(board, piece)
             if not win:
                 return piece
         return choice(pieces)
-            
+
     def has_winning_pos(self, board, piece):
         lewp = range(4)
         for i in lewp:
@@ -49,3 +49,6 @@ class NovicePlayer(RandomPlayer):
                     return (True, (p, 3-p))
                 diag2[p] = None
         return (False, (-1, -1))
+
+    def __str__(self):
+        return 'Novice'

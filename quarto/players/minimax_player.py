@@ -49,3 +49,6 @@ class MinimaxPlayer(NovicePlayer):
             pos, next = minimax(piece.val, board.get_board(), self.plys)
             self.placePiece = Piece(val=next) if 0 <= next < 16 else None
             return pos
+
+    def __str__(self):
+        return 'Minimax depth:{}, switch:{}'.format(self.plys, self.change)

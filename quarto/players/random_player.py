@@ -32,3 +32,6 @@ class RandomPlayer(object):
         except IndexError:
             self.placePiece = None
         return (x, y)
+
+    def __str__(self):
+        return 'Random'
