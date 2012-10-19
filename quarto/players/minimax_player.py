@@ -28,7 +28,7 @@ class MinimaxPlayer(NovicePlayer):
     def get_piece(self, board, pieces):
         '''Function returning the piece to be placed by the opponent,
         can be copied to the other players'''
-        if self.change > 16-len(pieces):
+        if self.change > (16-len(pieces)):
             #return super(MinimaxPlayer, self).get_piece(board, pieces)
             return NovicePlayer.get_piece(self, board, pieces)
         if self.placePiece:
@@ -37,7 +37,7 @@ class MinimaxPlayer(NovicePlayer):
             return NovicePlayer.get_piece(self, board, pieces)
 
     def get_placement(self, board, piece, pieces):
-        if self.change > 16-len(pieces):
+        if self.change > (16-len(pieces)):
             #return super(MinimaxPlayer, self).get_placement(board, piece, pieces)
             return NovicePlayer.get_placement(self, board, piece, pieces)
         else:

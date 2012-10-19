@@ -5,4 +5,11 @@ Player Minimax depth:3, switch:6 won: 221, 44%
 Player Minimax depth:3, switch:4 won: 246, 49%
 Ties: 33
 
+python main.py game --player1 minimax 3 2 --player2 minimax 3 4 -r 500 -s
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:2 won: 223, 44%
+Player Minimax depth:3, switch:4 won: 252, 50%
+Ties: 25
+
 
