@@ -114,6 +114,7 @@ class LocalNetworkPlayer(object):
             self.log.info('Got shutdown message')
             results = map(int, move[1:])
             total = sum(results)
+            self.log.info('Board:\n%s', self.board)
             self.log.info('Wins: %s(%i%%)', move[1], (results[0] / float(total))*100)
             self.log.info('Loses: %s(%i%%)', move[2], (results[1] / float(total))*100)
             self.log.info('Ties: %s(%i%%)', move[3], (results[2] / float(total))*100)

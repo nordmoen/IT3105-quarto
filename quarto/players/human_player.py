@@ -20,3 +20,6 @@ class HumanPlayer(RandomPlayer):
         x, y = raw_input('X, Y: ').split(',')
         pos = (int(x), int(y))
         return pos
+
+    def __str__(self):
+        return 'Human'
