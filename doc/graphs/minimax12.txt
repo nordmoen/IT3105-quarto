@@ -1,0 +1,96 @@
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:2 won: 444, 88%
+Player Minimax depth:3, switch:12 won: 48, 9%
+Ties: 8
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:4 won: 443, 88%
+Player Minimax depth:3, switch:12 won: 50, 10%
+Ties: 7
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:6 won: 450, 90%
+Player Minimax depth:3, switch:12 won: 35, 7%
+Ties: 15
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:8 won: 416, 83%
+Player Minimax depth:3, switch:12 won: 78, 15%
+Ties: 6
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:10 won: 313, 62%
+Player Minimax depth:3, switch:12 won: 179, 35%
+Ties: 8
+0% complete.
+10% complete.
+20% complete.
+30% complete.
+40% complete.
+50% complete.
+60% complete.
+70% complete.
+80% complete.
+90% complete.
+100% complete.
+Game statistics:
+Total games played: 500
+Player Minimax depth:3, switch:12 won: 252, 50%
+Player Minimax depth:3, switch:12 won: 245, 49%
+Ties: 3
