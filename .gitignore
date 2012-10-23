@@ -29,3 +29,9 @@ pip-log.txt
 #Vim specific:
 *.swp
 *.*~
+
+#Latex ignores:
+*.aux
+*.log
+*.out
+*.toc
