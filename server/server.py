@@ -89,6 +89,9 @@ class Server(object):
                 game = server_thread.ServerThread(p1, p2)
                 game.run()
                 winningPlayer, board = game.get_winner()
+                if game.get_last_exception():
+                    self.log.critical('Game threw exception:')
+                    self.log.critical(game.get_last_exception())
                 if winningPlayer:
                     self.log.debug('Player %s won the game', winningPlayer)
                     self.log.debug('Board:\n %s', board)
