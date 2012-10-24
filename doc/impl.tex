@@ -2,7 +2,7 @@
 Since we did the last project in Java creating a highly parallel algorithm for
 roll-out simulation we wanted a different challenge this time around. Because
 of this we decided that we wanted to create our implementation in Python, but
-because Python can be quite slow compared to others we wanted to implement the
+because Python can be quite slow compared to other languages we wanted to implement the
 time critical Minimax algorithm in C and interface that with our Python code.
 
 Since our implementation had to be supported in both Python and in C we decided
@@ -19,7 +19,22 @@ the implementation.
 
 Not everything could interface as easily as our pieces though. Since Python is 
 inherently object-oriented our representation of the \quarto{} board was also 
-implemented as an object, but this did provide us with some headaches which we 
+implemented as an object, this did provide us with some headaches which we 
 had to overcome.
 In the end we managed to get everything working and we got quite good speed 
 out of it which is reflected in our results.
+
+The advantage of doing the project this ways is that we could easily cooperate
+with other groups playing in Python. And the ease of working in Python is
+quite different than working in pure C.
+
+As mentioned before we use a byte\footnote{In the code we have used integers and
+unsigned char to represent it in code} to represent the individual pieces and to
+compare equality. All one has to do is "AND" those bytes together to see if all
+pieces share an attribute. The problem with that approach is that we only capture
+available attributes not an absent of attributes, e.g. if we have 1100 AND 1010
+we only detect that they share the first attribute not the last. To overcome this
+we took each piece and applied "XOR" against 1111 to produce the compliment.
+This would mean that the two pieces above also have their compliments compared
+i.e. 1100 XOR 1111 == 0011 and 1010 XOR 1111 == 0101, 0011 AND 0101 which now will correctly
+classify the last attribute as shared.
