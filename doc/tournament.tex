@@ -1,3 +1,12 @@
 \section{Tournament}\label{tournament}
-When coding for the tournament we did not face many additional challenges, since our internal representation of a \quarto{} piece as a byte was consistent with the representation used by the tournament host. And although the mapping of attributes onto bits was chosen different by the players competing in the tournament, the comparison of pieces both internally and externally was never affected by this mapping. The mapping was merely used for displaying board-states visually.
-What we had to was implementing a class player.py that interfaces with our internal syntax used in minimax\_player.py to the syntax used by the tournament host. This was necessary due to differences in naming of functions and ordering of parameters.
+When coding for the tournament we did not face many additional challenges, 
+since our internal representation of a \quarto{} piece as a byte was 
+consistent with the representation used by the tournament host. And although 
+the mapping of attributes onto bits was chosen different by the players 
+competing in the tournament, the comparison of pieces both internally and 
+externally was never affected by this mapping. The mapping was merely used for 
+displaying board-states visually.
+What we had to was implement a class player.py that interfaces with our 
+internal syntax used in minimax\_player.py to the syntax used by the 
+tournament host. This was necessary due to differences in naming of functions 
+and ordering of parameters.
