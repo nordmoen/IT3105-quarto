@@ -1,0 +1,24 @@
+\section{Implementation}\label{implementation}
+Since we did the last project in Java creating a highly parallel algorithm for
+roll-out simulation we wanted a different challenge this time around. Because
+of this we decided that we wanted to create our implementation in Python, but
+because Python can be quite slow compared to others we wanted to implement the
+time critical Minimax algorithm in C and interface that with our Python code.
+
+Since our implementation had to be supported in both Python and in C we decided
+quite early on that we needed to represent pieces as simple as possible. After
+some testing we found that representing each piece as an byte worked very well.
+Using a byte where each bit represented an attribute gave us a very easy task
+of sending information between Python and C and made our implementation very
+fast. There were several advantages representing our pieces as a single byte,
+not only did it help us interface Python and C, but the representation would
+not have to change if we needed to play with someone else using this same
+representation. This is because the method of comparing similarity would not
+have to change even though we gave different attributes to different bits in
+the implementation.
+
+Not everything could interface as easily as our pieces though. Since Python is inherently
+object-oriented our representation of the \quarto{} board was also implemented as
+an object, but this did provide us with some headaches which we had to overcome.
+In the end we managed to get everything working and we got quite good speed out of
+it which is reflected in our results.
