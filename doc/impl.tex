@@ -7,7 +7,7 @@ time critical Minimax algorithm in C and interface that with our Python code.
 
 Since our implementation had to be supported in both Python and in C we decided
 quite early on that we needed to represent pieces as simple as possible. After
-some testing we found that representing each piece as an byte worked very well.
+some testing we found that representing each piece as a byte worked very well.
 Using a byte where each bit represented an attribute gave us a very easy task
 of sending information between Python and C and made our implementation very
 fast. There were several advantages representing our pieces as a single byte,
@@ -17,8 +17,9 @@ representation. This is because the method of comparing similarity would not
 have to change even though we gave different attributes to different bits in
 the implementation.
 
-Not everything could interface as easily as our pieces though. Since Python is inherently
-object-oriented our representation of the \quarto{} board was also implemented as
-an object, but this did provide us with some headaches which we had to overcome.
-In the end we managed to get everything working and we got quite good speed out of
-it which is reflected in our results.
+Not everything could interface as easily as our pieces though. Since Python is 
+inherently object-oriented our representation of the \quarto{} board was also 
+implemented as an object, but this did provide us with some headaches which we 
+had to overcome.
+In the end we managed to get everything working and we got quite good speed 
+out of it which is reflected in our results.

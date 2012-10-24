@@ -1,0 +1,56 @@
+\section{Heuristics}\label{heuristics}
+The state evaluation function implemented for the minimax algorithm searches 
+through each end-state, looking for instances of board-states that are known  
+to affect the outcome of the match.
+Our heuristic function is set, arbitrarily, to return a value [-100, 100], 
+where a higher number means a higher valued state.
+
+\subsection{Wins}
+\begin{figure}[htb]
+\label{fig: win}
+\includegraphics{pictures/win.png}
+\caption[A \quarto{} win]{A winning board state in \quarto{}}
+\end{figure}
+The most obvious board-state to look for is a win, i.e. four pieces in a line  
+sharing at least one attribute. To do this we compare all the pieces in each 
+row, column and diagonal with each other and if a line is found where all 
+pieces are equal we return a value of 100.
+
+\subsection{Ties}
+\begin{figure}[htb]
+\label{fig: tie}
+\includegraphics{pictures/tie.png}
+\caption[A tie in \quarto{}]{A tied board state in \quarto{}}
+\end{figure}
+Also a nice board-state to look out for is a tie, when all sixteen pieces have  been placed on the board, but no win has been achieved. Checking this is merely counting if there are 16 pieces placed on the board, and if there is a  win. Since two optimal players will always tie\footnote{Proof of optimal play resulting in a tie: \url{http://web.archive.org/web/20041012023358/http://ssel.vub.ac.be/Members/LucGoossens/quarto/quartotext.htm}}, this is evaluated as 0, making sure that the minimax player will always choose a tie over a possible loss.
+
+\subsection{Guaranteed losses}
+\begin{figure}[htb]
+\label{fig: gloss}
+\includegraphics{pictures/gloss.png}
+\caption[A guaranteed loss in \quarto{}]{A board state showing a guaranteed loss in \quarto{}}
+\end{figure}
+When there are two distinct 3-piece lines which have opposite values of at least one attribute, giving any piece to the opponent is a  guaranteed loss.
+When we search for these states, we start of by finding all 3-piece lines on the board, then compare them to see if any of them have opposite values of an attribute.
+Since a loss is the worst possible outcome of a game of \quarto{}, these states are valued at -100 in order to make the minimax player steer away from them.
+
+\subsection{3-piece lines}
+\begin{figure}[htb]
+\label{fig: 3-odd}
+\includegraphics{pictures/3-odd.png}
+\caption[A 3-piece line in \quarto{}]{A board state showing a 3-piece line with an odd number of winning pieces}
+\end{figure}
+\begin{figure}[htb]
+\label{fig: 3-even}
+\includegraphics{pictures/3-even.png}
+\caption[A 3-piece line in \quarto{}]{A board state showing a 3-piece line with an even number of winning pieces}
+\end{figure}
+A board containing multiple 3-piece lines makes it difficult to give the 
+opponent a non-winning piece to play. However, depending on whether there is 
+an odd or even number of pieces that can be placed in the final slot of a 
+3-piece line, is it possible to force the opponent into returning a winning 
+piece. Since this is a risky strategy, the 3-piece lines with an even number 
+of winning pieces are weighted heavier than the 3-piece lines with an odd 
+number of winning pieces.
+
+%TODO: include pictures
