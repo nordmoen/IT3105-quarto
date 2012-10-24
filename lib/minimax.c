@@ -11,7 +11,7 @@
 
 int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
 {
-	int local_beta = beta;
+	int local_beta = 1000000;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
@@ -24,7 +24,7 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					//and return the value of this end state
 					res->x = j;
 					res->y = i;
-					return quarto_herustic(&newB);
+					return won*-100;
 				}else if(won){
 					//This is the maximum we can get, which means that we won the game
 					//no reason to go further down since this lead to a victory
@@ -79,7 +79,7 @@ int minValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 
 int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int alpha, int beta)
 {
-	int local_alpha = alpha;
+	int local_alpha = -10000000;
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < 4; j++){
 			if(!is_valid_piece(&GET_PIECE(j, i, board->board))){
@@ -92,7 +92,7 @@ int maxValue(QuartoPiece a, QuartoBoard *board, MinimaxRes *res, int numPly, int
 					//and return the value of this end state
 					res->x = j;
 					res->y = i;
-					return quarto_herustic(&newB);
+					return won*100;
 				}else if(won){
 					//This is the maximum we can get, which means that we won the game
 					//no reason to go further down since this lead to a victory
