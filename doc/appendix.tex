@@ -1,0 +1,25 @@
+\appendix
+\lstset{language=bash, frame=single, breaklines=true}
+\lstloadlanguages{bash}
+\section{Run configuration}\label{run configuration}
+We have included our parameters below for the different results that we got
+in the result section(see section \ref{results}). This should enable anyone to clone
+our git repository and get about the same results out.
+
+\begin{lstlisting}[label=lst:novice vs random, caption=Novice compared to random
+player with 500 games]
+$ python main.py game --player1 random --player2 novice -r 500 -s
+\end{lstlisting}
+
+\begin{lstlisting}[label=lst:novice vs minimax, caption=Novice compared to
+minimax player with 500 games]
+$ python main.py game --player1 minimax 3 6 --player2 novice -r 500 -s
+\end{lstlisting}
+
+\begin{lstlisting}[label=lst:minimax3 vs minimax4, caption=Minimax with a
+depth of 4 compared to a minimax player with a depth of 3]
+$ python main.py game --player1 minimax 3 6 --player2 minimax 4 6 -r 500 -s
+\end{lstlisting}
+
+\lstinputlisting[label=lst:switch code, caption=
+Code to test most minimax depth against each other]{graphs/test_minimax_depth.sh}
