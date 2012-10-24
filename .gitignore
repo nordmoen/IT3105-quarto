@@ -38,3 +38,4 @@ pip-log.txt
 *.dvi
 *.synctex.gz
 *.lof
+report.pdf
