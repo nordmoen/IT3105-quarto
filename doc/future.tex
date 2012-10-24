@@ -1,4 +1,16 @@
 \section{Future work}\label{future work}
+Our implementation is far from perfect and there are some improvements
+that we came up with that we did not have time to implement. Below
+are a few of the thoughts that we had for further improvements.
 
 \subsection{Guaranteed losses}
-There are cases of guaranteed losses that we do not currently detect, for instance: a 3-piece line of circles and one with tall pieces, with only circular and tall pieces remaining to be placed.
+There are cases of guaranteed losses that we do not currently detect, for 
+instance: a 3-piece line of circles and one with tall pieces, with only 
+circular and tall pieces remaining to be placed(see figure \ref{fig:gloss2}).
+
+\begin{figure}
+	\includegraphics{pictures/gloss2.png}
+	\caption{Another guaranteed loss situation not detected by
+	our algorithm}
+	\label{fig:gloss2}
+\end{figure}
